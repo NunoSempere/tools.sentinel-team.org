@@ -14,6 +14,10 @@ const futureTrialsInput = document.getElementById("future-trials");
 const calculateLaplaceBtn = document.getElementById("calculate-laplace");
 const laplaceResultDiv = document.getElementById("laplace-result");
 
+const prettyPrintProbs = (p) => {
+	return p === -1 ? "Error" : Math.round(1000 * p) / 10;
+};
+
 // Aggregation Tools Handler
 calculateAggregationBtn.addEventListener("click", () => {
 	const inputText = probabilitiesInput.value.trim();
@@ -69,14 +73,24 @@ calculateAggregationBtn.addEventListener("click", () => {
 	// Display results
 	let resultsHTML = '<h3>Aggregation Results</h3><ul class="results-list">';
 	results.forEach((result) => {
-		const value = result.value === -1 ? "Error" : result.value.toFixed(4);
+		const value = prettyPrintProbs(result.value);
 		resultsHTML += `
             <li>
                 <span class="method-name">${result.name}:</span>
-                <span class="method-value">${value}</span>
+                <span class="method-value">${value}%</span>
             </li>
         `;
 	});
+	const p = aggregation.geometricMeanOfOdds(probabilities);
+	const min = Math.min(...probabilities);
+	const max = Math.max(...probabilities);
+	const s = `${prettyPrintProbs(p)}% (${prettyPrintProbs(min)}% to ${prettyPrintProbs(max)}%)`;
+	resultsHTML += `
+            <li>
+                <span class="method-name">Sentinel-style string:</span>
+                <span class="method-value">${s}</span>
+            </li>
+        `;
 	resultsHTML += "</ul>";
 
 	showResults(aggregationResultsDiv, resultsHTML);
@@ -118,14 +132,10 @@ calculateLaplaceBtn.addEventListener("click", () => {
 	// Display result
 	const percentage = (result * 100).toFixed(2);
 	const resultsHTML = `
-        <h3>Laplace's Rule Result</h3>
-        <div class="success">
+        <div>
             <strong>Probability of success in next ${futureTrials} trial(s):</strong><br>
             ${result.toFixed(4)} (${percentage}%)
         </div>
-        <p style="margin-top: 15px; color: #718096; font-size: 0.9rem;">
-            Based on ${successes} successes out of ${trials} past trials.
-        </p>
     `;
 
 	showResults(laplaceResultDiv, resultsHTML);
