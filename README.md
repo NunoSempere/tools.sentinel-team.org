@@ -1,0 +1,4 @@
+- [ ] Get aggregation tooling working
+- [ ] Get laplace working
+- [ ] Get fitbeta
+- [ ] More ambitiously: get compiler for fermi working?
