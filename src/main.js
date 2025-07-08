@@ -42,7 +42,7 @@ calculateAggregationBtn.addEventListener("click", () => {
 	if (probabilities.length === 0) {
 		showError(
 			aggregationResultsDiv,
-			"Please enter valid, comma-separated probabilities.",
+			"Please enter valid probabilities (one per line).",
 		);
 		return;
 	}
@@ -144,16 +144,16 @@ function showResults(container, html) {
 
 // Add input validation and formatting
 probabilitiesInput.addEventListener("input", (e) => {
-	// Auto-format comma-separated values
+	// Auto-format newline-separated values
 	let value = e.target.value;
-	// Remove any non-numeric characters except commas, dots, and spaces
-	value = value.replace(/[^0-9,.\s]/g, "");
+	// Remove any non-numeric characters except dots, spaces, and newlines
+	value = value.replace(/[^0-9.\s\n]/g, "");
 	e.target.value = value;
 });
 
-// Add Enter key support
-probabilitiesInput.addEventListener("keypress", (e) => {
-	if (e.key === "Enter" && !e.shiftKey) {
+// Add Ctrl+Enter or Cmd+Enter to calculate (Enter allows newlines)
+probabilitiesInput.addEventListener("keydown", (e) => {
+	if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 		e.preventDefault();
 		calculateAggregationBtn.click();
 	}
