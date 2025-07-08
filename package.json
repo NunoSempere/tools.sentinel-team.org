@@ -1,0 +1,16 @@
+{
+	"name": "tools.sentinel-team.org",
+	"version": "1.0.0",
+	"description": "Tools to aid forecasters from the sentinel team",
+	"license": "MIT",
+	"author": "Nuño Sempere",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"dependencies": {
+		"@forecasting/aggregation": "^1.0.3",
+		"@forecasting/laplace": "^1.0.3"
+	}
+}
