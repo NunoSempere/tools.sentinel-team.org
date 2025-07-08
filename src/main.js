@@ -14,6 +14,13 @@ const futureTrialsInput = document.getElementById("future-trials");
 const calculateLaplaceBtn = document.getElementById("calculate-laplace");
 const laplaceResultDiv = document.getElementById("laplace-result");
 
+// Beta distribution elements
+const ciLowerInput = document.getElementById("ci-lower");
+const ciUpperInput = document.getElementById("ci-upper");
+const ciLengthInput = document.getElementById("ci-length");
+const calculateBetaBtn = document.getElementById("calculate-beta");
+const betaResultDiv = document.getElementById("beta-result");
+
 const prettyPrintProbs = (p) => {
 	return p === -1 ? "Error" : Math.round(1000 * p) / 10;
 };
@@ -141,6 +148,83 @@ calculateLaplaceBtn.addEventListener("click", () => {
 	showResults(laplaceResultDiv, resultsHTML);
 });
 
+// Beta Distribution Handler
+calculateBetaBtn.addEventListener("click", () => {
+	const ciLower = parseFloat(ciLowerInput.value);
+	const ciUpper = parseFloat(ciUpperInput.value);
+	const ciLength = parseFloat(ciLengthInput.value);
+
+	// Validation
+	if (isNaN(ciLower) || isNaN(ciUpper) || isNaN(ciLength)) {
+		showError(betaResultDiv, "Please enter valid numbers for all fields.");
+		return;
+	}
+
+	if (ciLower < 0 || ciLower > 1 || ciUpper < 0 || ciUpper > 1) {
+		showError(betaResultDiv, "Confidence interval values must be between 0 and 1.");
+		return;
+	}
+
+	if (ciLength <= 0 || ciLength > 1) {
+		showError(betaResultDiv, "Confidence interval length must be between 0 and 1.");
+		return;
+	}
+
+	if (ciLower >= ciUpper) {
+		showError(betaResultDiv, "Lower bound must be less than upper bound.");
+		return;
+	}
+
+	// Disable button and show loading state
+	calculateBetaBtn.disabled = true;
+	calculateBetaBtn.textContent = "Calculating...";
+
+	// Prepare data for API call
+	const data = {
+		ci_lower: ciLower,
+		ci_upper: ciUpper,
+		ci_length: ciLength,
+	};
+
+	// Make request to external API
+	fetch("https://trastos.nunosempere.com/fit-beta", {
+		method: "POST",
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(data)
+	})
+	.then(response => {
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		return response.json();
+	})
+	.then(result => {
+		// Re-enable button
+		calculateBetaBtn.disabled = false;
+		calculateBetaBtn.textContent = "Calculate Beta Distribution";
+
+		// Display result
+		const resultsHTML = `
+			<div>
+				<strong>Beta Distribution Parameters:</strong><br>
+				<span class="method-value">beta(${result[0])}, ${result[1])})</span>
+			</div>
+		`;
+		showResults(betaResultDiv, resultsHTML);
+	})
+	.catch(error => {
+		// Re-enable button
+		calculateBetaBtn.disabled = false;
+		calculateBetaBtn.textContent = "Calculate Beta Distribution";
+		
+		console.error('Error:', error);
+		showError(betaResultDiv, "Error calculating beta distribution. Please try again or check your internet connection.");
+	});
+});
+
 // Helper functions
 function showError(container, message) {
 	container.innerHTML = `<div class="error">${message}</div>`;
@@ -173,6 +257,14 @@ probabilitiesInput.addEventListener("keydown", (e) => {
 	input.addEventListener("keypress", (e) => {
 		if (e.key === "Enter") {
 			calculateLaplaceBtn.click();
+		}
+	});
+});
+
+[ciLowerInput, ciUpperInput, ciLengthInput].forEach((input) => {
+	input.addEventListener("keypress", (e) => {
+		if (e.key === "Enter") {
+			calculateBetaBtn.click();
 		}
 	});
 });
