@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecasting Tools - Sentinel Team</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🔮 Forecasting Tools</h1>
+        <p>Tools to aid forecasters from the Sentinel team</p>
+    </header>
+
+    <main>
+        <section class="tool-section">
+            <h2>📊 Probability Aggregation</h2>
+            <p>Enter probabilities (0-1) separated by commas to calculate various aggregation methods:</p>
+            
+            <div class="input-container">
+                <textarea 
+                    id="probabilities-input" 
+                    rows="3" 
+                    placeholder="0.1, 0.25, 0.6, 0.8"
+                    aria-label="Comma-separated probabilities"
+                ></textarea>
+                <button id="calculate-aggregation" class="primary-btn">Calculate Aggregations</button>
+            </div>
+            
+            <div id="aggregation-results" class="results-container"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>🎯 Laplace's Rule of Succession</h2>
+            <p>Calculate probability using Laplace's rule based on past observations:</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="past-successes">Past Successes:</label>
+                    <input type="number" id="past-successes" value="1" min="0" aria-label="Number of past successes">
+                </div>
+                <div class="input-group">
+                    <label for="past-trials">Past Trials:</label>
+                    <input type="number" id="past-trials" value="2" min="0" aria-label="Number of past trials">
+                </div>
+                <div class="input-group">
+                    <label for="future-trials">Future Trials:</label>
+                    <input type="number" id="future-trials" value="1" min="0" aria-label="Number of future trials">
+                </div>
+            </div>
+            
+            <button id="calculate-laplace" class="primary-btn">Calculate Probability</button>
+            <div id="laplace-result" class="results-container"></div>
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>
