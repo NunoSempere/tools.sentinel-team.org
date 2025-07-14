@@ -161,12 +161,18 @@ calculateBetaBtn.addEventListener("click", () => {
 	}
 
 	if (ciLower < 0 || ciLower > 1 || ciUpper < 0 || ciUpper > 1) {
-		showError(betaResultDiv, "Confidence interval values must be between 0 and 1.");
+		showError(
+			betaResultDiv,
+			"Confidence interval values must be between 0 and 1.",
+		);
 		return;
 	}
 
 	if (ciLength <= 0 || ciLength > 1) {
-		showError(betaResultDiv, "Confidence interval length must be between 0 and 1.");
+		showError(
+			betaResultDiv,
+			"Confidence interval length must be between 0 and 1.",
+		);
 		return;
 	}
 
@@ -190,39 +196,42 @@ calculateBetaBtn.addEventListener("click", () => {
 	fetch("https://trastos.nunosempere.com/fit-beta", {
 		method: "POST",
 		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json'
+			Accept: "application/json",
+			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(data)
+		body: JSON.stringify(data),
 	})
-	.then(response => {
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-		return response.json();
-	})
-	.then(result => {
-		// Re-enable button
-		calculateBetaBtn.disabled = false;
-		calculateBetaBtn.textContent = "Calculate Beta Distribution";
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			return response.json();
+		})
+		.then((result) => {
+			// Re-enable button
+			calculateBetaBtn.disabled = false;
+			calculateBetaBtn.textContent = "Calculate Beta Distribution";
 
-		// Display result
-		const resultsHTML = `
+			// Display result
+			const resultsHTML = `
 			<div>
 				<strong>Beta Distribution Parameters:</strong><br>
-				<span class="method-value">beta(${result[0])}, ${result[1])})</span>
+				<span class="method-value">beta(${result[0]}, ${result[1]})</span>
 			</div>
 		`;
-		showResults(betaResultDiv, resultsHTML);
-	})
-	.catch(error => {
-		// Re-enable button
-		calculateBetaBtn.disabled = false;
-		calculateBetaBtn.textContent = "Calculate Beta Distribution";
-		
-		console.error('Error:', error);
-		showError(betaResultDiv, "Error calculating beta distribution. Please try again or check your internet connection.");
-	});
+			showResults(betaResultDiv, resultsHTML);
+		})
+		.catch((error) => {
+			// Re-enable button
+			calculateBetaBtn.disabled = false;
+			calculateBetaBtn.textContent = "Calculate Beta Distribution";
+
+			console.error("Error:", error);
+			showError(
+				betaResultDiv,
+				"Error calculating beta distribution. Please try again or check your internet connection.",
+			);
+		});
 });
 
 // Helper functions

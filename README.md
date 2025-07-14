@@ -1,4 +1,15 @@
-- [ ] Get aggregation tooling working
-- [ ] Get laplace working
-- [ ] Get fitbeta
-- [ ] More ambitiously: get compiler for fermi working?
+Probability manipulation:
+
+- [x] Get aggregation tooling working
+- [x] Get laplace working
+- [x] Get fitbeta
+- [ ] Compiler for fermi working?
+
+Text manipulation:
+- [ ] Incorporator
+- [ ] Topicator
+  - [ ] Could automatically classify stuff?
+- [ ] Twitter monitoring?
+  - Request monitoring, then display most important tweets in the last period? Gate by password.
+  - Could talk with forecasters
+  - Make stuff composable?
