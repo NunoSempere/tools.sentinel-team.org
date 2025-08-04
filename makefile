@@ -10,3 +10,5 @@ server:
 	cd src && python3 -m http.server 8000
 	cd ..
 
+chmod:
+	chmod 755 -R . # required by nginx
