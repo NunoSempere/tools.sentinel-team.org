@@ -1,5 +1,6 @@
 import * as aggregation from "./deps/aggregation.js";
 import { laplace } from "./deps/laplace.js";
+import { daysUntil, daysSince, getTodayFormatted } from "./deps/dates.js";
 
 // DOM elements
 const probabilitiesInput = document.getElementById("probabilities-input");
@@ -13,6 +14,13 @@ const pastTrialsInput = document.getElementById("past-trials");
 const futureTrialsInput = document.getElementById("future-trials");
 const calculateLaplaceBtn = document.getElementById("calculate-laplace");
 const laplaceResultDiv = document.getElementById("laplace-result");
+
+// Date calculation elements
+const targetDateInput = document.getElementById("target-date");
+const pastDateInput = document.getElementById("past-date");
+const calculateDaysUntilBtn = document.getElementById("calculate-days-until");
+const calculateDaysSinceBtn = document.getElementById("calculate-days-since");
+const dateResultsDiv = document.getElementById("date-results");
 
 // Beta distribution elements
 const ciLowerInput = document.getElementById("ci-lower");
@@ -101,6 +109,63 @@ calculateAggregationBtn.addEventListener("click", () => {
 	resultsHTML += "</ul>";
 
 	showResults(aggregationResultsDiv, resultsHTML);
+});
+
+// Date Calculations Handlers
+calculateDaysUntilBtn.addEventListener("click", () => {
+	const targetDate = targetDateInput.value.trim();
+	
+	if (!targetDate) {
+		showError(dateResultsDiv, "Please enter a target date.");
+		return;
+	}
+	
+	const result = daysUntil(targetDate);
+	
+	if (result.error) {
+		let errorMessage = result.error;
+		if (result.suggestion) {
+			errorMessage += ` ${result.suggestion}`;
+		}
+		showError(dateResultsDiv, errorMessage);
+		return;
+	}
+	
+	const resultsHTML = `
+		<div>
+			<span class="method-value">${result.days}</span> days until ${targetDate}; today is ${getTodayFormatted()}
+		</div>
+	`;
+	
+	showResults(dateResultsDiv, resultsHTML);
+});
+
+calculateDaysSinceBtn.addEventListener("click", () => {
+	const pastDate = pastDateInput.value.trim();
+	
+	if (!pastDate) {
+		showError(dateResultsDiv, "Please enter a past date.");
+		return;
+	}
+	
+	const result = daysSince(pastDate);
+	
+	if (result.error) {
+		let errorMessage = result.error;
+		if (result.suggestion) {
+			errorMessage += ` ${result.suggestion}`;
+		}
+		showError(dateResultsDiv, errorMessage);
+		return;
+	}
+	
+	const resultsHTML = `
+		<div>
+			<span class="method-value">${result.days}</span> days since ${pastDate}; today is ${getTodayFormatted()}
+		</div>
+	`;
+	
+	showResults(dateResultsDiv, resultsHTML);
 });
 
 // Laplace's Rule Handler
@@ -268,6 +333,19 @@ probabilitiesInput.addEventListener("keydown", (e) => {
 			calculateLaplaceBtn.click();
 		}
 	});
+});
+
+// Date input event listeners
+targetDateInput.addEventListener("keypress", (e) => {
+	if (e.key === "Enter") {
+		calculateDaysUntilBtn.click();
+	}
+});
+
+pastDateInput.addEventListener("keypress", (e) => {
+	if (e.key === "Enter") {
+		calculateDaysSinceBtn.click();
+	}
 });
 
 [ciLowerInput, ciUpperInput, ciLengthInput].forEach((input) => {

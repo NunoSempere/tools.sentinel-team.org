@@ -78,7 +78,11 @@ main {
     margin-bottom: 8px;
 }
 
-textarea, input[type="number"] {
+.input-group .primary-btn {
+    margin-top: 10px;
+}
+
+textarea, input[type="number"], input[type="text"] {
     padding: 12px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
@@ -87,7 +91,28 @@ textarea, input[type="number"] {
     background: white;
 }
 
-textarea:focus, input[type="number"]:focus {
+/* Special styling for date inputs */
+input[type="text"]#target-date,
+input[type="text"]#past-date {
+    padding: 16px;
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+}
+
+input[type="text"]#target-date:focus,
+input[type="text"]#past-date:focus {
+    outline: none;
+    border-color: #1a1a1a;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+textarea:focus, input[type="number"]:focus, input[type="text"]:focus {
     outline: none;
     border-color: #333;
 }

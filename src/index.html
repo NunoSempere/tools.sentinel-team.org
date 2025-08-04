@@ -57,6 +57,26 @@
         </section>
 
         <section class="tool-section">
+            <h2>Date Calculations</h2>
+            <p>Calculate days until future dates or days since past dates. Use YYYY/MM/DD format (e.g., 2024/12/25):</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="target-date">Days Until (future date):</label>
+                    <input type="text" id="target-date" placeholder="2024/12/25" aria-label="Target date in YYYY/MM/DD format">
+                    <button id="calculate-days-until" class="primary-btn">Calculate Days Until</button>
+                </div>
+                <div class="input-group">
+                    <label for="past-date">Days Since (past date):</label>
+                    <input type="text" id="past-date" placeholder="2024/01/01" aria-label="Past date in YYYY/MM/DD format">
+                    <button id="calculate-days-since" class="primary-btn">Calculate Days Since</button>
+                </div>
+            </div>
+            
+            <div id="date-results" class="results-container"></div>
+        </section>
+
+        <section class="tool-section">
             <h2>Beta Distribution Fitting</h2>
             <p>Find a beta distribution that fits your desired confidence interval. For example, to find a beta distribution whose 95% confidence interval is 0.2 to 0.8, input those values below:</p>
             
