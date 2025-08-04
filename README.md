@@ -6,6 +6,7 @@ Probability manipulation:
 - [ ] Compiler for fermi working?
 
 Text manipulation:
+
 - [ ] Incorporator
 - [ ] Topicator
   - [ ] Could automatically classify stuff?
