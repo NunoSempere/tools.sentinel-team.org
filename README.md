@@ -7,6 +7,7 @@ Probability manipulation:
 
 Text manipulation:
 
+- [x] Dates until/from
 - [ ] Incorporator
 - [ ] Topicator
   - [ ] Could automatically classify stuff?
