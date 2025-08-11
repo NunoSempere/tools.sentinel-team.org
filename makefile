@@ -6,7 +6,7 @@ src:
 	rm -r node_modules
 
 server:
-	pkill -f "python3 -m http.server" || true
+	# pkill -f "python3 -m http.server" || true
 	cd src && python3 -m http.server 8000
 	cd ..
 
