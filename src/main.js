@@ -1,6 +1,7 @@
 import * as aggregation from "./deps/aggregation.js";
 import { laplace } from "./deps/laplace.js";
 import { daysUntil, daysSince, getTodayFormatted } from "./deps/dates.js";
+import { combineMarkdownFiles } from "./deps/markdown-combiner.js";
 
 // DOM elements
 const probabilitiesInput = document.getElementById("probabilities-input");
@@ -28,6 +29,11 @@ const ciUpperInput = document.getElementById("ci-upper");
 const ciLengthInput = document.getElementById("ci-length");
 const calculateBetaBtn = document.getElementById("calculate-beta");
 const betaResultDiv = document.getElementById("beta-result");
+
+// Google Docs combiner elements
+const gdocsUrlsInput = document.getElementById("gdocs-urls");
+const combineGdocsBtn = document.getElementById("combine-gdocs");
+const gdocsResultDiv = document.getElementById("gdocs-result");
 
 const prettyPrintProbs = (p) => {
 	return p === -1 ? "Error" : Math.round(1000 * p) / 10;
@@ -297,6 +303,91 @@ calculateBetaBtn.addEventListener("click", () => {
 				"Error calculating beta distribution. Please try again or check your internet connection.",
 			);
 		});
+});
+
+// Google Docs Combiner Handler
+combineGdocsBtn.addEventListener("click", async () => {
+	const inputText = gdocsUrlsInput.value.trim();
+
+	if (!inputText) {
+		showError(gdocsResultDiv, "Please enter Google Docs URLs.");
+		return;
+	}
+
+	// Extract Google Doc IDs from URLs
+	const urls = inputText.split("\n").map(url => url.trim()).filter(url => url);
+	const docIds = [];
+
+	for (const url of urls) {
+		const match = url.match(/\/document\/d\/([a-zA-Z0-9-_]+)/);
+		if (match) {
+			docIds.push(match[1]);
+		} else {
+			showError(gdocsResultDiv, `Invalid Google Docs URL: ${url}`);
+			return;
+		}
+	}
+
+	if (docIds.length === 0) {
+		showError(gdocsResultDiv, "No valid Google Docs URLs found.");
+		return;
+	}
+
+	// Disable button and show loading state
+	combineGdocsBtn.disabled = true;
+	combineGdocsBtn.textContent = "Fetching and combining...";
+
+	try {
+		// Fetch markdown content for each document
+		const markdownContents = [];
+		for (const docId of docIds) {
+			const response = await fetch(`https://trastos.nunosempere.com/get-gdoc?id=${docId}`);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch document ${docId}: ${response.status}`);
+			}
+			const markdown = await response.text();
+			markdownContents.push(markdown);
+		}
+
+		// Combine the markdown files
+		const result = combineMarkdownFiles(markdownContents);
+
+		if (result.error) {
+			throw new Error(result.error);
+		}
+
+		// Display result
+		const resultsHTML = `
+			<div>
+				<h3>Combined Google Docs</h3>
+				<p>${result.message}</p>
+				<div class="markdown-output">
+					<h4>Combined Markdown:</h4>
+					<textarea readonly rows="20" cols="80">${result.combined}</textarea>
+					<br><br>
+					<button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)" class="secondary-btn">Copy to Clipboard</button>
+				</div>
+			</div>
+		`;
+
+		showResults(gdocsResultDiv, resultsHTML);
+
+	} catch (error) {
+		console.error("Error:", error);
+		showError(gdocsResultDiv, `Error: ${error.message}`);
+	} finally {
+		// Re-enable button
+		combineGdocsBtn.disabled = false;
+		combineGdocsBtn.textContent = "Combine Google Docs";
+	}
+});
+
+// Google Docs input event listeners
+gdocsUrlsInput.addEventListener("keydown", (e) => {
+	if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+		e.preventDefault();
+		combineGdocsBtn.click();
+	}
 });
 
 // Helper functions

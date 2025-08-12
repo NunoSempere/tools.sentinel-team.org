@@ -98,6 +98,26 @@
             <button id="calculate-beta" class="primary-btn">Calculate Beta Distribution</button>
             <div id="beta-result" class="results-container"></div>
         </section>
+
+        <section class="tool-section">
+            <h2>Google Docs Combiner</h2>
+            <p>Combine multiple Google Docs by their headers. Enter Google Docs URLs (one per line):</p>
+            
+            <div class="input-container">
+                <textarea 
+                    id="gdocs-urls" 
+                    rows="4"
+                    cols="60"
+                    placeholder="https://docs.google.com/document/d/1ABC123.../edit&#10;https://docs.google.com/document/d/2DEF456.../edit"
+                    aria-label="Google Docs URLs one per line"
+                ></textarea>
+            </div>
+            <div>
+                <button id="combine-gdocs" class="primary-btn">Combine Google Docs</button>
+            </div>
+            
+            <div id="gdocs-result" class="results-container"></div>
+        </section>
     </main>
 
     <script type="module" src="main.js"></script>
