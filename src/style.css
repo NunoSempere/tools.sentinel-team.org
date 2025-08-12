@@ -143,6 +143,30 @@ textarea {
     background: #000;
 }
 
+.secondary-btn {
+    background: #666;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.secondary-btn:hover {
+    background: #555;
+}
+
+.markdown-output {
+    margin-top: 15px;
+}
+
+.markdown-textarea {
+    width: 100%;
+}
+
 .results-container {
     margin-top: 20px;
     padding: 20px;

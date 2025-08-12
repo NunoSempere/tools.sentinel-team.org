@@ -363,9 +363,9 @@ combineGdocsBtn.addEventListener("click", async () => {
 				<p>${result.message}</p>
 				<div class="markdown-output">
 					<h4>Combined Markdown:</h4>
-					<textarea readonly rows="20" cols="80">${result.combined}</textarea>
+					<textarea readonly class="markdown-textarea" cols="60" rows="20">${result.combined}</textarea>
 					<br><br>
-					<button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)" class="secondary-btn">Copy to Clipboard</button>
+					<button class="primary-btn" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)" >Copy to Clipboard</button>
 				</div>
 			</div>
 		`;
