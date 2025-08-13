@@ -15,5 +15,3 @@ Text manipulation:
   - Request monitoring, then display most important tweets in the last period? Gate by password.
   - Could talk with forecasters
   - Make stuff composable?
-
-This repository is deployed to the xyz server

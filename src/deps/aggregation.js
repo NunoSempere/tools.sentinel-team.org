@@ -10,16 +10,11 @@ const validateArray = (arr) =>
 // Main functions
 export const median = (array) => {
   if (!validateArray(array)) return -1;
-  // needs validation array not empty
-  let midway = Math.floor(array.length) / 2;
-  let arrayToBeSorted = [...array];
-  // sorting mutates the array, which I am averse to
-  let arraySorted = arrayToBeSorted.sort((a, b) => a - b);
-  if (midway % 2) {
-    return arraySorted[midway];
-  } else {
-    return (arraySorted[midway - 1] + arraySorted[midway]) / 2;
-  }
+  const sorted = [...array].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
 export const arithmeticMean = (array) => {
