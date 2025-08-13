@@ -48,9 +48,7 @@
 
         <section class="tool-section">
             <h2>Tweet Retrieval</h2>
-            
-            <h3>📋 Get Tweets from List</h3>
-            <p>Retrieve tweets from all monitored accounts or filter by list:</p>
+            <p>Retrieve tweets from all accounts or specific users:</p>
             
             <div class="input-grid">
                 <div class="input-group">
@@ -63,31 +61,19 @@
                 </div>
             </div>
             
-            <button id="get-all-tweets" class="primary-btn">Get Tweets from List</button>
-            <button id="hide-list-tweets" class="secondary-btn" style="display: none; margin-left: 10px;">Hide Tweets</button>
+            <button id="get-all-tweets" class="primary-btn">Get All Tweets</button>
             
-            <div id="list-tweets-result" class="results-container"></div>
-            
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e5e5;">
-            
-            <h3>👤 Get Tweets from Specific User</h3>
-            <p>Retrieve tweets from a single user account:</p>
-            
-            <div class="input-grid">
-                <div class="input-group">
-                    <label for="user-tweets-username">Username:</label>
-                    <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
-                </div>
-                <div class="input-group">
-                    <label for="user-tweets-limit">Limit (max 1000):</label>
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="user-tweets-username">Get Tweets from Specific User:</label>
+                <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="user-tweets-limit">Limit:</label>
                     <input type="number" id="user-tweets-limit" value="50" min="1" max="1000" aria-label="Number of tweets from user">
                 </div>
+                <button id="get-user-tweets" class="primary-btn" style="margin-top: 10px;">Get User Tweets</button>
             </div>
             
-            <button id="get-user-tweets" class="primary-btn">Get User Tweets</button>
-            <button id="hide-user-tweets" class="secondary-btn" style="display: none; margin-left: 10px;">Hide Tweets</button>
-            
-            <div id="user-tweets-result" class="results-container"></div>
+            <div id="tweets-result" class="results-container"></div>
         </section>
 
         <section class="tool-section">
