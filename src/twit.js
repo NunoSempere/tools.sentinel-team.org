@@ -18,7 +18,11 @@ const getAllTweetsBtn = document.getElementById('get-all-tweets');
 const userTweetsUsernameInput = document.getElementById('user-tweets-username');
 const userTweetsLimitInput = document.getElementById('user-tweets-limit');
 const getUserTweetsBtn = document.getElementById('get-user-tweets');
-const tweetsResultDiv = document.getElementById('tweets-result');
+const listTweetsResultDiv = document.getElementById('list-tweets-result');
+const userTweetsResultDiv = document.getElementById('user-tweets-result');
+console.log('Found userTweetsResultDiv:', userTweetsResultDiv);
+const hideListTweetsBtn = document.getElementById('hide-list-tweets');
+const hideUserTweetsBtn = document.getElementById('hide-user-tweets');
 
 const filterQuestionInput = document.getElementById('filter-question');
 const filterUsersInput = document.getElementById('filter-users');
@@ -27,16 +31,28 @@ const filterResultDiv = document.getElementById('filter-result');
 
 // Helper functions
 function showError(container, message) {
+    if (!container) {
+        console.error('Container element is null:', container);
+        return;
+    }
     container.innerHTML = `<div class="error">${message}</div>`;
     container.classList.add('show');
 }
 
 function showSuccess(container, message) {
+    if (!container) {
+        console.error('Container element is null:', container);
+        return;
+    }
     container.innerHTML = `<div class="success">${message}</div>`;
     container.classList.add('show');
 }
 
 function showResults(container, html) {
+    if (!container) {
+        console.error('Container element is null:', container);
+        return;
+    }
     container.innerHTML = html;
     container.classList.add('show');
 }
@@ -47,6 +63,66 @@ function formatDate(dateString) {
 
 function truncateText(text, maxLength = 100) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+// Tweet retrieval functions
+async function getTweetsFromList(limit = 100, list = '') {
+    let endpoint = `/tweets?limit=${limit}`;
+    if (list) endpoint += `&list=${encodeURIComponent(list)}`;
+    
+    return await apiRequest(endpoint);
+}
+
+async function getTweetsFromUser(username, limit = 50) {
+    return await apiRequest(`/tweets/${username}?limit=${limit}`);
+}
+
+// Display functions
+function displayTweetResults(result, title) {
+    if (result.data.tweets && result.data.tweets.length > 0) {
+        let html = `<h3>${title} (${result.data.tweets.length})</h3>`;
+        html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+        
+        result.data.tweets.forEach(tweet => {
+            html += `
+                <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
+                    <div style="font-weight: bold; color: #1a1a1a;">@${tweet.username}</div>
+                    <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
+                    <div style="font-size: 0.9em; color: #666;">${formatDate(tweet.created_at)}</div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        showResults(listTweetsResultDiv, html);
+        if (hideListTweetsBtn) hideListTweetsBtn.style.display = 'inline-block';
+    } else {
+        showSuccess(listTweetsResultDiv, `No tweets found for ${title.toLowerCase()}.`);
+        if (hideListTweetsBtn) hideListTweetsBtn.style.display = 'inline-block';
+    }
+}
+
+function displayUserTweetResults(result, username) {
+    if (result.data.tweets && result.data.tweets.length > 0) {
+        let html = `<h3>Tweets from @${username} (${result.data.tweets.length})</h3>`;
+        html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+        
+        result.data.tweets.forEach(tweet => {
+            html += `
+                <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
+                    <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
+                    <div style="font-size: 0.9em; color: #666;">${formatDate(tweet.created_at)}</div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        showResults(userTweetsResultDiv, html);
+        if (hideUserTweetsBtn) hideUserTweetsBtn.style.display = 'inline-block';
+    } else {
+        showSuccess(userTweetsResultDiv, `No tweets found for @${username}.`);
+        if (hideUserTweetsBtn) hideUserTweetsBtn.style.display = 'inline-block';
+    }
 }
 
 // API request helper
@@ -167,7 +243,7 @@ hideAccountsBtn.addEventListener('click', () => {
     hideAccountsBtn.style.display = 'none';
 });
 
-// Get All Tweets Handler
+// Get Tweets from List Handler
 getAllTweetsBtn.addEventListener('click', async () => {
     const limit = parseInt(tweetsLimitInput.value) || 100;
     const list = tweetsListInput.value.trim();
@@ -176,36 +252,13 @@ getAllTweetsBtn.addEventListener('click', async () => {
     getAllTweetsBtn.textContent = 'Loading...';
     
     try {
-        let endpoint = `/tweets?limit=${limit}`;
-        if (list) endpoint += `&list=${encodeURIComponent(list)}`;
-        
-        const result = await apiRequest(endpoint);
-        console.log(result)
-        
-        if (result.data.tweets && result.data.tweets.length > 0) {
-            let html = `<h3>Tweets (${result.data.tweets.length})</h3>`;
-            html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
-            
-            result.data.tweets.forEach(tweet => {
-                html += `
-                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
-                        <div style="font-weight: bold; color: #1a1a1a;">@${tweet.username}</div>
-                        <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
-                        <div style="font-size: 0.9em; color: #666;">${formatDate(tweet.created_at)}</div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            showResults(tweetsResultDiv, html);
-        } else {
-            showSuccess(tweetsResultDiv, 'No tweets found.');
-        }
+        const result = await getTweetsFromList(limit, list);
+        displayTweetResults(result, list ? `Tweets from list "${list}"` : 'All Tweets');
     } catch (error) {
-        showError(tweetsResultDiv, `❌ Failed to get tweets: ${error.message}`);
+        showError(listTweetsResultDiv, `❌ Failed to get tweets from list: ${error.message}`);
     } finally {
         getAllTweetsBtn.disabled = false;
-        getAllTweetsBtn.textContent = 'Get All Tweets';
+        updateListButtonLabel();
     }
 });
 
@@ -215,7 +268,8 @@ getUserTweetsBtn.addEventListener('click', async () => {
     const limit = parseInt(userTweetsLimitInput.value) || 50;
     
     if (!username) {
-        showError(tweetsResultDiv, 'Please enter a username.');
+        console.log('userTweetsResultDiv:', userTweetsResultDiv);
+        showError(userTweetsResultDiv, 'Please enter a username.');
         return;
     }
     
@@ -223,28 +277,11 @@ getUserTweetsBtn.addEventListener('click', async () => {
     getUserTweetsBtn.textContent = 'Loading...';
     
     try {
-        const result = await apiRequest(`/tweets/${username}?limit=${limit}`);
-        
-        if (result.data.tweets && result.data.tweets.length > 0) {
-            let html = `<h3>Tweets from @${username} (${result.data.length})</h3>`;
-            html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
-            
-            result.data.tweets.forEach(tweet => {
-                html += `
-                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
-                        <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
-                        <div style="font-size: 0.9em; color: #666;">${formatDate(tweet.created_at)}</div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            showResults(tweetsResultDiv, html);
-        } else {
-            showSuccess(tweetsResultDiv, `No tweets found for @${username}.`);
-        }
+        const result = await getTweetsFromUser(username, limit);
+        displayUserTweetResults(result, username);
     } catch (error) {
-        showError(tweetsResultDiv, `❌ Failed to get tweets for @${username}: ${error.message}`);
+        console.log("Failed to get user tweets error")
+        showError(userTweetsResultDiv, `❌ Failed to get tweets from @${username}: ${error.message}`);
     } finally {
         getUserTweetsBtn.disabled = false;
         getUserTweetsBtn.textContent = 'Get User Tweets';
@@ -297,7 +334,7 @@ filterTweetsBtn.addEventListener('click', async () => {
             
             if (passing.length > 0) {
                 html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets</h4>';
-                html += '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
+                html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
                 
                 passing.forEach(item => {
                     html += `
@@ -315,7 +352,7 @@ filterTweetsBtn.addEventListener('click', async () => {
             
             if (failing.length > 0 && failing.length <= 10) {
                 html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (sample)</h4>';
-                html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+                html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
                 
                 failing.slice(0, 5).forEach(item => {
                     html += `
@@ -355,8 +392,6 @@ addListInput.addEventListener('keypress', (e) => {
     }
 });
 
-
-
 userTweetsUsernameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         getUserTweetsBtn.click();
@@ -375,4 +410,26 @@ filterUsersInput.addEventListener('keydown', (e) => {
         e.preventDefault();
         filterTweetsBtn.click();
     }
+});
+
+// Helper function to update list button label
+function updateListButtonLabel() {
+    const list = tweetsListInput.value.trim();
+    getAllTweetsBtn.textContent = list ? `Get Tweets from "${list}" List` : 'Get All Tweets';
+}
+
+// Update button text based on list input
+tweetsListInput.addEventListener('input', updateListButtonLabel);
+
+// Hide tweet results handlers
+hideListTweetsBtn.addEventListener('click', () => {
+    listTweetsResultDiv.classList.remove('show');
+    listTweetsResultDiv.innerHTML = '';
+    hideListTweetsBtn.style.display = 'none';
+});
+
+hideUserTweetsBtn.addEventListener('click', () => {
+    userTweetsResultDiv.classList.remove('show');
+    userTweetsResultDiv.innerHTML = '';
+    hideUserTweetsBtn.style.display = 'none';
 });
