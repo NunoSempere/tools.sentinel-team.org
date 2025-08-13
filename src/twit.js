@@ -8,9 +8,8 @@ const healthResultDiv = document.getElementById('health-result');
 const addUsernameInput = document.getElementById('add-username');
 const addListInput = document.getElementById('add-list');
 const addAccountBtn = document.getElementById('add-account');
-const getAccountsBtn = document.getElementById('get-accounts');
-const deleteUsernameInput = document.getElementById('delete-username');
-const deleteAccountBtn = document.getElementById('delete-account');
+const showAccountsBtn = document.getElementById('show-accounts');
+const hideAccountsBtn = document.getElementById('hide-accounts');
 const accountResultDiv = document.getElementById('account-result');
 
 const tweetsLimitInput = document.getElementById('tweets-limit');
@@ -125,16 +124,16 @@ addAccountBtn.addEventListener('click', async () => {
     }
 });
 
-// Get All Accounts Handler
-getAccountsBtn.addEventListener('click', async () => {
-    getAccountsBtn.disabled = true;
-    getAccountsBtn.textContent = 'Loading...';
+// Show Monitored Accounts Handler
+showAccountsBtn.addEventListener('click', async () => {
+    showAccountsBtn.disabled = true;
+    showAccountsBtn.textContent = 'Loading...';
     
     try {
         const result = await apiRequest('/accounts');
         
         if (result.data && result.data.length > 0) {
-            let html = '<h3>All Accounts</h3><ul class="results-list">';
+            let html = '<h3>Monitored Accounts</h3><ul class="results-list">';
             result.data.forEach(account => {
                 html += `
                     <li>
@@ -145,46 +144,27 @@ getAccountsBtn.addEventListener('click', async () => {
             });
             html += '</ul>';
             showResults(accountResultDiv, html);
+            showAccountsBtn.style.display = 'none';
+            hideAccountsBtn.style.display = 'inline-block';
         } else {
-            showSuccess(accountResultDiv, 'No accounts found in database.');
+            showResults(accountResultDiv, '<h3>Monitored Accounts</h3><p>No accounts found in database.</p>');
+            showAccountsBtn.style.display = 'none';
+            hideAccountsBtn.style.display = 'inline-block';
         }
     } catch (error) {
         showError(accountResultDiv, `❌ Failed to get accounts: ${error.message}`);
     } finally {
-        getAccountsBtn.disabled = false;
-        getAccountsBtn.textContent = 'Get All Accounts';
+        showAccountsBtn.disabled = false;
+        showAccountsBtn.textContent = 'Show Monitored Accounts';
     }
 });
 
-// Delete Account Handler
-deleteAccountBtn.addEventListener('click', async () => {
-    const username = deleteUsernameInput.value.trim();
-    
-    if (!username) {
-        showError(accountResultDiv, 'Please enter a username to delete.');
-        return;
-    }
-    
-    if (!confirm(`Are you sure you want to delete account @${username}?`)) {
-        return;
-    }
-    
-    deleteAccountBtn.disabled = true;
-    deleteAccountBtn.textContent = 'Deleting...';
-    
-    try {
-        const result = await apiRequest(`/accounts/${username}`, {
-            method: 'DELETE'
-        });
-        
-        showSuccess(accountResultDiv, `✅ ${result.message}`);
-        deleteUsernameInput.value = '';
-    } catch (error) {
-        showError(accountResultDiv, `❌ Failed to delete account: ${error.message}`);
-    } finally {
-        deleteAccountBtn.disabled = false;
-        deleteAccountBtn.textContent = 'Delete Account';
-    }
+// Hide Accounts Handler
+hideAccountsBtn.addEventListener('click', () => {
+    accountResultDiv.classList.remove('show');
+    accountResultDiv.innerHTML = '';
+    showAccountsBtn.style.display = 'inline-block';
+    hideAccountsBtn.style.display = 'none';
 });
 
 // Get All Tweets Handler
@@ -200,12 +180,13 @@ getAllTweetsBtn.addEventListener('click', async () => {
         if (list) endpoint += `&list=${encodeURIComponent(list)}`;
         
         const result = await apiRequest(endpoint);
+        console.log(result)
         
-        if (result.data && result.data.length > 0) {
-            let html = `<h3>Tweets (${result.data.length})</h3>`;
+        if (result.data.tweets && result.data.tweets.length > 0) {
+            let html = `<h3>Tweets (${result.data.tweets.length})</h3>`;
             html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
-            result.data.forEach(tweet => {
+            result.data.tweets.forEach(tweet => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
                         <div style="font-weight: bold; color: #1a1a1a;">@${tweet.username}</div>
@@ -244,11 +225,11 @@ getUserTweetsBtn.addEventListener('click', async () => {
     try {
         const result = await apiRequest(`/tweets/${username}?limit=${limit}`);
         
-        if (result.data && result.data.length > 0) {
+        if (result.data.tweets && result.data.tweets.length > 0) {
             let html = `<h3>Tweets from @${username} (${result.data.length})</h3>`;
             html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
-            result.data.forEach(tweet => {
+            result.data.tweets.forEach(tweet => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
                         <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
@@ -374,11 +355,7 @@ addListInput.addEventListener('keypress', (e) => {
     }
 });
 
-deleteUsernameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        deleteAccountBtn.click();
-    }
-});
+
 
 userTweetsUsernameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
