@@ -20,6 +20,8 @@ const userTweetsLimitInput = document.getElementById('user-tweets-limit');
 const getUserTweetsBtn = document.getElementById('get-user-tweets');
 const tweetsResultDiv = document.getElementById('tweets-result');
 const userTweetsResultDiv = document.getElementById('user-tweets-result');
+const hideAllTweetsBtn = document.getElementById('hide-all-tweets');
+const hideUserTweetsBtn = document.getElementById('hide-user-tweets');
 
 const filterQuestionInput = document.getElementById('filter-question');
 const filterUsersInput = document.getElementById('filter-users');
@@ -185,20 +187,22 @@ getAllTweetsBtn.addEventListener('click', async () => {
         
         if (result.data.tweets && result.data.tweets.length > 0) {
             let html = `<h3>Tweets (${result.data.tweets.length})</h3>`;
-            html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
             result.data.tweets.forEach(tweet => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
                         <div style="font-weight: bold; color: #1a1a1a;">@${tweet.username}</div>
                         <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
-                        <div style="font-size: 0.9em; color: #666;">${formatDate(tweet.created_at)}</div>
+                        <div style="font-size: 0.9em; color: #666;"><a href="https://twitter.com/i/web/status/${tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(tweet.created_at)}</a></div>
                     </div>
                 `;
             });
             
             html += '</div>';
             showResults(tweetsResultDiv, html);
+            hideAllTweetsBtn.style.display = 'inline-block';
+            hideAllTweetsBtn.textContent = 'Hide Results';
         } else {
             showSuccess(tweetsResultDiv, 'No tweets found.');
         }
@@ -228,19 +232,21 @@ getUserTweetsBtn.addEventListener('click', async () => {
         
         if (result.data.tweets && result.data.tweets.length > 0) {
             let html = `<h3>Tweets from @${username} (${result.data.tweets.length})</h3>`;
-            html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
             result.data.tweets.forEach(tweet => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
                         <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
-                        <div style="font-size: 0.9em; color: #666;">${formatDate(tweet.created_at)}</div>
+                        <div style="font-size: 0.9em; color: #666;"><a href="https://twitter.com/i/web/status/${tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(tweet.created_at)}</a></div>
                     </div>
                 `;
             });
             
             html += '</div>';
             showResults(userTweetsResultDiv, html);
+            hideUserTweetsBtn.style.display = 'inline-block';
+            hideUserTweetsBtn.textContent = 'Hide Results';
         } else {
             showSuccess(userTweetsResultDiv, `No tweets found for @${username}.`);
         }
@@ -305,7 +311,7 @@ filterTweetsBtn.addEventListener('click', async () => {
                         <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
                             <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
                             <div style="margin: 5px 0; line-height: 1.4;">${truncateText(item.tweet.text, 150)}</div>
-                            <div style="font-size: 0.9em; color: #666; margin: 5px 0;">${formatDate(item.tweet.created_at)}</div>
+                            <div style="font-size: 0.9em; color: #666; margin: 5px 0;"><a href="https://twitter.com/i/web/status/${item.tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(item.tweet.created_at)}</a></div>
                             <div style="font-size: 0.85em; color: #2e7d32; font-style: italic;">Reasoning: ${item.reasoning}</div>
                         </div>
                     `;
@@ -375,5 +381,27 @@ filterUsersInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         filterTweetsBtn.click();
+    }
+});
+
+// Hide/Show All Tweets Handler
+hideAllTweetsBtn.addEventListener('click', () => {
+    if (tweetsResultDiv.classList.contains('show')) {
+        tweetsResultDiv.classList.remove('show');
+        hideAllTweetsBtn.textContent = 'Show Results';
+    } else {
+        tweetsResultDiv.classList.add('show');
+        hideAllTweetsBtn.textContent = 'Hide Results';
+    }
+});
+
+// Hide/Show User Tweets Handler
+hideUserTweetsBtn.addEventListener('click', () => {
+    if (userTweetsResultDiv.classList.contains('show')) {
+        userTweetsResultDiv.classList.remove('show');
+        hideUserTweetsBtn.textContent = 'Show Results';
+    } else {
+        userTweetsResultDiv.classList.add('show');
+        hideUserTweetsBtn.textContent = 'Hide Results';
     }
 });
