@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter API Interface - Sentinel Team</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Twitter API Interface</h1>
+        <p>Interface for managing Twitter accounts and retrieving tweets</p>
+        <p><small>API Server: <a href="https://tweets.nunosempere.com" target="_blank">https://tweets.nunosempere.com</a></small></p>
+    </header>
+
+    <main>
+        <section class="tool-section">
+            <h2>Health Check</h2>
+            <p>Check if the Twitter API server is running:</p>
+            
+            <button id="health-check" class="primary-btn">Check Server Health</button>
+            <div id="health-result" class="results-container"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>Account Management</h2>
+            <p>Add, view, or remove Twitter accounts from the database:</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="add-username">Twitter Username:</label>
+                    <input type="text" id="add-username" placeholder="elonmusk" aria-label="Twitter username to add">
+                </div>
+                <div class="input-group">
+                    <label for="add-list">List Name (optional):</label>
+                    <input type="text" id="add-list" placeholder="tech" aria-label="Optional list name">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button id="add-account" class="primary-btn">Add Account</button>
+                <button id="get-accounts" class="secondary-btn">Get All Accounts</button>
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label for="delete-username">Delete Account:</label>
+                <input type="text" id="delete-username" placeholder="username to delete" aria-label="Username to delete">
+                <button id="delete-account" class="primary-btn" style="margin-top: 10px;">Delete Account</button>
+            </div>
+            
+            <div id="account-result" class="results-container"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>Tweet Retrieval</h2>
+            <p>Retrieve tweets from all accounts or specific users:</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="tweets-limit">Limit (max 1000):</label>
+                    <input type="number" id="tweets-limit" value="100" min="1" max="1000" aria-label="Number of tweets to retrieve">
+                </div>
+                <div class="input-group">
+                    <label for="tweets-list">List Filter (optional):</label>
+                    <input type="text" id="tweets-list" placeholder="ai-og" aria-label="Filter by list name">
+                </div>
+            </div>
+            
+            <button id="get-all-tweets" class="primary-btn">Get All Tweets</button>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="user-tweets-username">Get Tweets from Specific User:</label>
+                <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="user-tweets-limit">Limit:</label>
+                    <input type="number" id="user-tweets-limit" value="50" min="1" max="1000" aria-label="Number of tweets from user">
+                </div>
+                <button id="get-user-tweets" class="primary-btn" style="margin-top: 10px;">Get User Tweets</button>
+            </div>
+            
+            <div id="tweets-result" class="results-container"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>AI Tweet Filtering</h2>
+            <p>Filter tweets using natural language questions with GPT-4o-mini:</p>
+            
+            <div class="input-container">
+                <label for="filter-question">Filter Question:</label>
+                <textarea 
+                    id="filter-question" 
+                    rows="3"
+                    placeholder="Does this tweet discuss artificial intelligence or machine learning?"
+                    aria-label="Question to filter tweets with"
+                ></textarea>
+            </div>
+            
+            <div class="input-container">
+                <label for="filter-users">Usernames (one per line):</label>
+                <textarea 
+                    id="filter-users" 
+                    rows="5"
+                    placeholder="OpenAI&#10;elonmusk&#10;AnthropicAI"
+                    aria-label="Usernames to filter tweets from"
+                ></textarea>
+            </div>
+            
+            <button id="filter-tweets" class="primary-btn">Filter Tweets</button>
+            <div id="filter-result" class="results-container"></div>
+        </section>
+    </main>
+
+    <script type="module" src="twit.js"></script>
+</body>
+</html>
