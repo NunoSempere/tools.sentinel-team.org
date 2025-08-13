@@ -90,23 +90,25 @@
             <h2>AI Tweet Filtering</h2>
             <p>Filter tweets using natural language questions with GPT-4o-mini:</p>
             
-            <div class="input-container">
+            <div class="input-container" style="margin-bottom: 20px;">
                 <label for="filter-question">Filter Question:</label>
                 <textarea 
                     id="filter-question" 
                     rows="3"
                     placeholder="Does this tweet discuss artificial intelligence or machine learning?"
                     aria-label="Question to filter tweets with"
+                    style="width: 100%; resize: vertical;"
                 ></textarea>
             </div>
             
-            <div class="input-container">
+            <div class="input-container" style="margin-bottom: 20px;">
                 <label for="filter-users">Usernames (one per line):</label>
                 <textarea 
                     id="filter-users" 
                     rows="5"
                     placeholder="OpenAI&#10;elonmusk&#10;AnthropicAI"
                     aria-label="Usernames to filter tweets from"
+                    style="width: 100%; resize: vertical;"
                 ></textarea>
             </div>
             
