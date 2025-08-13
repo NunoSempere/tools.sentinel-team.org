@@ -47,8 +47,8 @@
         </section>
 
         <section class="tool-section">
-            <h2>Tweet Retrieval</h2>
-            <p>Retrieve tweets from all accounts or specific users:</p>
+            <h2>Get All Tweets</h2>
+            <p>Retrieve tweets from all monitored accounts with optional list filtering:</p>
             
             <div class="input-grid">
                 <div class="input-group">
@@ -63,17 +63,27 @@
             
             <button id="get-all-tweets" class="primary-btn">Get All Tweets</button>
             
-            <div class="input-group" style="margin-top: 20px;">
-                <label for="user-tweets-username">Get Tweets from Specific User:</label>
-                <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
-                <div class="input-group" style="margin-top: 10px;">
-                    <label for="user-tweets-limit">Limit:</label>
+            <div id="tweets-result" class="results-container"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>Get User Tweets</h2>
+            <p>Retrieve tweets from a specific user:</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="user-tweets-username">Username:</label>
+                    <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
+                </div>
+                <div class="input-group">
+                    <label for="user-tweets-limit">Limit (max 1000):</label>
                     <input type="number" id="user-tweets-limit" value="50" min="1" max="1000" aria-label="Number of tweets from user">
                 </div>
-                <button id="get-user-tweets" class="primary-btn" style="margin-top: 10px;">Get User Tweets</button>
             </div>
             
-            <div id="tweets-result" class="results-container"></div>
+            <button id="get-user-tweets" class="primary-btn">Get User Tweets</button>
+            
+            <div id="user-tweets-result" class="results-container"></div>
         </section>
 
         <section class="tool-section">

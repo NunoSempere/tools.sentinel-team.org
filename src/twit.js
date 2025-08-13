@@ -19,6 +19,7 @@ const userTweetsUsernameInput = document.getElementById('user-tweets-username');
 const userTweetsLimitInput = document.getElementById('user-tweets-limit');
 const getUserTweetsBtn = document.getElementById('get-user-tweets');
 const tweetsResultDiv = document.getElementById('tweets-result');
+const userTweetsResultDiv = document.getElementById('user-tweets-result');
 
 const filterQuestionInput = document.getElementById('filter-question');
 const filterUsersInput = document.getElementById('filter-users');
@@ -215,7 +216,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
     const limit = parseInt(userTweetsLimitInput.value) || 50;
     
     if (!username) {
-        showError(tweetsResultDiv, 'Please enter a username.');
+        showError(userTweetsResultDiv, 'Please enter a username.');
         return;
     }
     
@@ -226,7 +227,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
         const result = await apiRequest(`/tweets/${username}?limit=${limit}`);
         
         if (result.data.tweets && result.data.tweets.length > 0) {
-            let html = `<h3>Tweets from @${username} (${result.data.length})</h3>`;
+            let html = `<h3>Tweets from @${username} (${result.data.tweets.length})</h3>`;
             html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
             result.data.tweets.forEach(tweet => {
@@ -239,12 +240,12 @@ getUserTweetsBtn.addEventListener('click', async () => {
             });
             
             html += '</div>';
-            showResults(tweetsResultDiv, html);
+            showResults(userTweetsResultDiv, html);
         } else {
-            showSuccess(tweetsResultDiv, `No tweets found for @${username}.`);
+            showSuccess(userTweetsResultDiv, `No tweets found for @${username}.`);
         }
     } catch (error) {
-        showError(tweetsResultDiv, `❌ Failed to get tweets for @${username}: ${error.message}`);
+        showError(userTweetsResultDiv, `❌ Failed to get tweets for @${username}: ${error.message}`);
     } finally {
         getUserTweetsBtn.disabled = false;
         getUserTweetsBtn.textContent = 'Get User Tweets';
