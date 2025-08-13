@@ -30,8 +30,7 @@
             
             <div style="margin-bottom: 20px;">
                 <button id="add-account" class="primary-btn">Add Account</button>
-                <button id="show-accounts" class="secondary-btn">Show Accounts List</button>
-                <button id="hide-accounts" class="secondary-btn" style="display: none;">Hide Accounts List</button>
+                <button id="refresh-accounts" class="secondary-btn">Refresh Accounts List</button>
             </div>
             
             <div id="account-results" class="results-container"></div>
@@ -109,8 +108,7 @@
         const usernameInput = document.getElementById('username-input');
         const listInput = document.getElementById('list-input');
         const addAccountBtn = document.getElementById('add-account');
-        const showAccountsBtn = document.getElementById('show-accounts');
-        const hideAccountsBtn = document.getElementById('hide-accounts');
+        const refreshAccountsBtn = document.getElementById('refresh-accounts');
         const accountResultsDiv = document.getElementById('account-results');
         const accountsListDiv = document.getElementById('accounts-list');
 
@@ -182,8 +180,8 @@
                     `);
                     usernameInput.value = '';
                     listInput.value = '';
-                    // Show accounts list
-                    showAccountsBtn.click();
+                    // Refresh accounts list
+                    refreshAccountsBtn.click();
                 } else {
                     showError(accountResultsDiv, result.message || 'Failed to add account');
                 }
@@ -195,9 +193,9 @@
             }
         });
 
-        showAccountsBtn.addEventListener('click', async () => {
-            showAccountsBtn.disabled = true;
-            showAccountsBtn.textContent = 'Loading...';
+        refreshAccountsBtn.addEventListener('click', async () => {
+            refreshAccountsBtn.disabled = true;
+            refreshAccountsBtn.textContent = 'Loading...';
 
             try {
                 const response = await fetch(`${API_BASE}/accounts`);
@@ -208,50 +206,54 @@
                     if (accounts.length === 0) {
                         showResults(accountsListDiv, '<div>No accounts found. Add some accounts to get started!</div>');
                     } else {
-                        let html = `
-                            <h3>Monitored Accounts</h3>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f8f8f8; border-bottom: 2px solid #e5e5e5;">
-                                        <th style="padding: 12px; text-align: left; font-weight: 500;">Username</th>
-                                        <th style="padding: 12px; text-align: left; font-weight: 500;">List</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                        `;
+                        let html = '<h3>Monitored Accounts</h3><ul class="results-list">';
                         accounts.forEach(account => {
                             html += `
-                                <tr style="border-bottom: 1px solid #e5e5e5;">
-                                    <td style="padding: 12px; font-family: 'Courier New', monospace;">@${account.username}</td>
-                                    <td style="padding: 12px; color: #666;">${account.list || '—'}</td>
-                                </tr>
+                                <li>
+                                    <span class="method-name">@${account.username}</span>
+                                    <span class="method-value">${account.list || 'No list'}</span>
+                                    <button onclick="deleteAccount('${account.username}')" class="secondary-btn" style="margin-left: 10px; padding: 4px 8px; font-size: 12px;">Delete</button>
+                                </li>
                             `;
                         });
-                        html += '</tbody></table>';
+                        html += '</ul>';
                         showResults(accountsListDiv, html);
                     }
-                    showAccountsBtn.style.display = 'none';
-                    hideAccountsBtn.style.display = 'inline-block';
                 } else {
                     showError(accountsListDiv, result.message || 'Failed to load accounts');
                 }
             } catch (error) {
                 showError(accountsListDiv, `Error: ${error.message}`);
             } finally {
-                showAccountsBtn.disabled = false;
-                showAccountsBtn.textContent = 'Show Accounts List';
+                refreshAccountsBtn.disabled = false;
+                refreshAccountsBtn.textContent = 'Refresh Accounts List';
             }
         });
 
-        hideAccountsBtn.addEventListener('click', () => {
-            accountsListDiv.classList.remove('show');
-            accountsListDiv.innerHTML = '';
-            showAccountsBtn.style.display = 'inline-block';
-            hideAccountsBtn.style.display = 'none';
-        });
+        // Delete account function (global scope for onclick)
+        window.deleteAccount = async (username) => {
+            if (!confirm(`Are you sure you want to delete @${username}?`)) return;
 
+            try {
+                const response = await fetch(`${API_BASE}/accounts/${username}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
 
-
+                if (result.success) {
+                    refreshAccountsBtn.click();
+                    showResults(accountResultsDiv, `
+                        <div class="success">
+                            Successfully deleted @${username}
+                        </div>
+                    `);
+                } else {
+                    showError(accountResultsDiv, result.message || 'Failed to delete account');
+                }
+            } catch (error) {
+                showError(accountResultsDiv, `Error: ${error.message}`);
+            }
+        };
 
         // Tweet Retrieval
         getTweetsBtn.addEventListener('click', async () => {
@@ -439,7 +441,10 @@
             }
         });
 
-
+        // Auto-load accounts on page load
+        window.addEventListener('load', () => {
+            refreshAccountsBtn.click();
+        });
     </script>
 </body>
 </html>
