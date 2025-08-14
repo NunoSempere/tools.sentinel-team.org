@@ -56,13 +56,19 @@ function truncateText(text, maxLength = 100) {
 // API request helper
 async function apiRequest(endpoint, options = {}) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
+        
         const response = await fetch(`${API_BASE}${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers
             },
-            ...options
+            ...options,
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         const data = await response.json();
         
@@ -301,7 +307,8 @@ filterTweetsBtn.addEventListener('click', async () => {
         
         const result = await apiRequest('/filter', {
             method: 'POST',
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
+            timeout: 300000 // 5 minutes
         });
         
         if (result.data && result.data.filtered_tweets) {
