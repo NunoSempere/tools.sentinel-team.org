@@ -1,0 +1,7 @@
+
+twit.js:313 WebSocket connection to 'wss://tweets.nunosempere.com/api/filter-ws' failed: 
+(anonymous) @ twit.js:313
+twit.js:352 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}isTrusted: truebubbles: falsecancelBubble: falsecancelable: falsecomposed: falsecurrentTarget: WebSocket {url: 'wss://tweets.nunosempere.com/api/filter-ws', readyState: 3, bufferedAmount: 0, onopen: ƒ, onerror: ƒ, …}defaultPrevented: falseeventPhase: 0returnValue: truesrcElement: WebSocket {url: 'wss://tweets.nunosempere.com/api/filter-ws', readyState: 3, bufferedAmount: 0, onopen: ƒ, onerror: ƒ, …}target: WebSocket {url: 'wss://tweets.nunosempere.com/api/filter-ws', readyState: 3, bufferedAmount: 0, onopen: ƒ, onerror: ƒ, …}timeStamp: 47097.299999999814type: "error"[[Prototype]]: Event
+ws.onerror @ twit.js:352
+twit.js:363 WebSocket closed unexpectedly: 1006 
+ws.onclose @ twit.js:363
