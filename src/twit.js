@@ -24,6 +24,7 @@ const hideAllTweetsBtn = document.getElementById('hide-all-tweets');
 const hideUserTweetsBtn = document.getElementById('hide-user-tweets');
 
 const filterQuestionInput = document.getElementById('filter-question');
+const filterListInput = document.getElementById('filter-list');
 const filterUsersInput = document.getElementById('filter-users');
 const filterTweetsBtn = document.getElementById('filter-tweets');
 const filterResultDiv = document.getElementById('filter-result');
@@ -261,6 +262,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
 // Filter Tweets Handler
 filterTweetsBtn.addEventListener('click', async () => {
     const question = filterQuestionInput.value.trim();
+    const list = filterListInput.value.trim();
     const usersText = filterUsersInput.value.trim();
     
     if (!question) {
@@ -268,15 +270,13 @@ filterTweetsBtn.addEventListener('click', async () => {
         return;
     }
     
-    if (!usersText) {
-        showError(filterResultDiv, 'Please enter at least one username.');
+    if (!list && !usersText) {
+        showError(filterResultDiv, 'Please enter either a list name or usernames.');
         return;
     }
     
-    const users = usersText.split('\n').map(u => u.trim()).filter(u => u);
-    
-    if (users.length === 0) {
-        showError(filterResultDiv, 'Please enter valid usernames.');
+    if (list && usersText) {
+        showError(filterResultDiv, 'Please provide either a list name OR usernames, not both.');
         return;
     }
     
@@ -284,12 +284,24 @@ filterTweetsBtn.addEventListener('click', async () => {
     filterTweetsBtn.textContent = 'Filtering...';
     
     try {
+        const requestBody = { question: question };
+        
+        if (list) {
+            requestBody.list = list;
+        } else {
+            const users = usersText.split('\n').map(u => u.trim()).filter(u => u);
+            if (users.length === 0) {
+                showError(filterResultDiv, 'Please enter valid usernames.');
+                filterTweetsBtn.disabled = false;
+                filterTweetsBtn.textContent = 'Filter Tweets';
+                return;
+            }
+            requestBody.users = users;
+        }
+        
         const result = await apiRequest('/filter', {
             method: 'POST',
-            body: JSON.stringify({
-                question: question,
-                users: users
-            })
+            body: JSON.stringify(requestBody)
         });
         
         if (result.data && result.data.filtered_tweets) {
