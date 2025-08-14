@@ -54,6 +54,12 @@ function truncateText(text, maxLength = 100) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
+// Parse markdown to HTML using marked library
+function parseMarkdown(text) {
+    if (!text || typeof marked === 'undefined') return text;
+    return marked.parse(text);
+}
+
 // API request helper
 async function apiRequest(endpoint, options = {}) {
     try {
@@ -401,7 +407,7 @@ function displayFilterResults(result) {
         if (result.summary) {
             html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
             html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
-            html += `<p style="margin-bottom: 0; line-height: 1.5;">${result.summary}</p>`;
+            html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
             html += `</div>`;
         } else {
             // Show placeholder for summary while we wait for it
