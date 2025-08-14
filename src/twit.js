@@ -338,8 +338,18 @@ filterTweetsBtn.addEventListener('click', async () => {
                     break;
                     
                 case 'result':
-                    ws.close();
+                    // Store the tweets data and display immediately
+                    window.currentFilterResults = message.data;
                     displayFilterResults(message.data);
+                    break;
+                    
+                case 'summary':
+                    // Update the display with the summary
+                    if (window.currentFilterResults) {
+                        window.currentFilterResults.summary = message.data.summary;
+                        displayFilterResults(window.currentFilterResults);
+                    }
+                    ws.close();
                     break;
                     
                 case 'error':
@@ -392,6 +402,12 @@ function displayFilterResults(result) {
             html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
             html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
             html += `<p style="margin-bottom: 0; line-height: 1.5;">${result.summary}</p>`;
+            html += `</div>`;
+        } else {
+            // Show placeholder for summary while we wait for it
+            html += `<div id="summary-placeholder" style="background: #f8f9fa; border-left: 4px solid #6c757d; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
+            html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
+            html += `<p style="margin-bottom: 0; line-height: 1.5; color: #6c757d; font-style: italic;">Generating summary...</p>`;
             html += `</div>`;
         }
         
@@ -500,6 +516,10 @@ hideFilterResultsBtn.addEventListener('click', () => {
     if (filterResultDiv.classList.contains('show')) {
         filterResultDiv.classList.remove('show');
         hideFilterResultsBtn.textContent = 'Show Results';
+        // Clean up stored results when hiding
+        if (window.currentFilterResults) {
+            delete window.currentFilterResults;
+        }
     } else {
         filterResultDiv.classList.add('show');
         hideFilterResultsBtn.textContent = 'Hide Results';

@@ -57,7 +57,8 @@ For long-running filter operations that may timeout with HTTP requests, use the 
 
 **Message Types:**
 - `progress`: Real-time processing updates with `{processed, total, message}`
-- `result`: Final `FilterResponse` when complete
+- `result`: Filtered tweets sent immediately (without summary)
+- `summary`: Summary sent separately after tweets for faster response
 - `error`: Error message if processing fails
 
 **Benefits:**
@@ -203,8 +204,12 @@ ws.onmessage = (event) => {
       console.log(`Progress: ${message.data.processed}/${message.data.total} - ${message.data.message}`);
       break;
     case 'result':
-      console.log('Final result:', message.data);
-      ws.close();
+      console.log('Filtered tweets received:', message.data);
+      // Note: Summary will arrive separately
+      break;
+    case 'summary':
+      console.log('Summary received:', message.data.summary);
+      ws.close(); // Both tweets and summary now received
       break;
     case 'error':
       console.error('Error:', message.data.error);
