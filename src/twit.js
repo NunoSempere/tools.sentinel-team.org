@@ -1,5 +1,5 @@
 // Twitter API base URL
-const API_BASE = 'https://tweets.nunosempere.com/api';
+const API_BASE = 'http://localhost:3343/api' // 'https://tweets.nunosempere.com/api';
 
 // DOM elements
 const healthCheckBtn = document.getElementById('health-check');
@@ -27,6 +27,7 @@ const filterQuestionInput = document.getElementById('filter-question');
 const filterListInput = document.getElementById('filter-list');
 const filterUsersInput = document.getElementById('filter-users');
 const filterTweetsBtn = document.getElementById('filter-tweets');
+const hideFilterResultsBtn = document.getElementById('hide-filter-results');
 const filterResultDiv = document.getElementById('filter-result');
 
 // Helper functions
@@ -200,7 +201,7 @@ getAllTweetsBtn.addEventListener('click', async () => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
                         <div style="font-weight: bold; color: #1a1a1a;">@${tweet.username}</div>
-                        <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
+                        <div style="margin: 5px 0; line-height: 1.4;">${tweet.text}</div>
                         <div style="font-size: 0.9em; color: #666;"><a href="https://twitter.com/i/web/status/${tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(tweet.created_at)}</a></div>
                     </div>
                 `;
@@ -244,7 +245,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
             result.data.tweets.forEach(tweet => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
-                        <div style="margin: 5px 0; line-height: 1.4;">${truncateText(tweet.text, 200)}</div>
+                        <div style="margin: 5px 0; line-height: 1.4;">${tweet.text}</div>
                         <div style="font-size: 0.9em; color: #666;"><a href="https://twitter.com/i/web/status/${tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(tweet.created_at)}</a></div>
                     </div>
                 `;
@@ -265,7 +266,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
     }
 });
 
-// Filter Tweets Handler
+// Filter Tweets Handler (WebSocket)
 filterTweetsBtn.addEventListener('click', async () => {
     const question = filterQuestionInput.value.trim();
     const list = filterListInput.value.trim();
@@ -287,7 +288,10 @@ filterTweetsBtn.addEventListener('click', async () => {
     }
     
     filterTweetsBtn.disabled = true;
-    filterTweetsBtn.textContent = 'Filtering...';
+    filterTweetsBtn.textContent = 'Connecting...';
+    
+    // Show initial progress
+    showResults(filterResultDiv, '<div id="filter-progress"><p>🔌 Connecting to server...</p></div>');
     
     try {
         const requestBody = { question: question };
@@ -305,68 +309,126 @@ filterTweetsBtn.addEventListener('click', async () => {
             requestBody.users = users;
         }
         
-        const result = await apiRequest('/filter', {
-            method: 'POST',
-            body: JSON.stringify(requestBody),
-            timeout: 300000 // 5 minutes
-        });
+        // Create WebSocket connection
+        const wsUrl = API_BASE.replace('https://', 'wss://').replace('http://', 'ws://') + '/filter-ws';
+        const ws = new WebSocket(wsUrl);
         
-        if (result.data && result.data.filtered_tweets) {
-            const filtered = result.data.filtered_tweets;
-            const passing = filtered.filter(item => item.pass);
-            const failing = filtered.filter(item => !item.pass);
+        ws.onopen = () => {
+            filterTweetsBtn.textContent = 'Filtering...';
+            showResults(filterResultDiv, '<div id="filter-progress"><p>🚀 Starting tweet filtering...</p></div>');
+            // Send filter request
+            ws.send(JSON.stringify(requestBody));
+        };
+        
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
             
-            let html = `<h3>Filter Results</h3>`;
-            html += `<p><strong>Question:</strong> "${result.data.question}"</p>`;
-            html += `<p><strong>Total tweets processed:</strong> ${filtered.length}</p>`;
-            html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
-            
-            if (passing.length > 0) {
-                html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets</h4>';
-                html += '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
-                
-                passing.forEach(item => {
-                    html += `
-                        <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
-                            <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
-                            <div style="margin: 5px 0; line-height: 1.4;">${truncateText(item.tweet.text, 150)}</div>
-                            <div style="font-size: 0.9em; color: #666; margin: 5px 0;"><a href="https://twitter.com/i/web/status/${item.tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(item.tweet.created_at)}</a></div>
-                            <div style="font-size: 0.85em; color: #2e7d32; font-style: italic;">Reasoning: ${item.reasoning}</div>
+            switch (message.type) {
+                case 'progress':
+                    const progressHtml = `
+                        <div id="filter-progress">
+                            <p>🔄 Processing tweets: ${message.data.processed}/${message.data.total}</p>
+                            <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+                                <div style="background: #4caf50; height: 20px; width: ${(message.data.processed / message.data.total * 100)}%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <p style="font-size: 0.9em; color: #666;">${message.data.message}</p>
                         </div>
                     `;
-                });
-                
-                html += '</div>';
+                    showResults(filterResultDiv, progressHtml);
+                    break;
+                    
+                case 'result':
+                    ws.close();
+                    displayFilterResults(message.data);
+                    break;
+                    
+                case 'error':
+                    ws.close();
+                    showError(filterResultDiv, `❌ Filtering failed: ${message.data.error}`);
+                    break;
             }
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            showError(filterResultDiv, '❌ Connection error. Please try again.');
+            filterTweetsBtn.disabled = false;
+            filterTweetsBtn.textContent = 'Filter Tweets';
+        };
+        
+        ws.onclose = (event) => {
+            filterTweetsBtn.disabled = false;
+            filterTweetsBtn.textContent = 'Filter Tweets';
             
-            if (failing.length > 0 && failing.length <= 10) {
-                html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (sample)</h4>';
-                html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
-                
-                failing.slice(0, 5).forEach(item => {
-                    html += `
-                        <div style="border-bottom: 1px solid #eee; padding: 8px 0; margin-bottom: 8px;">
-                            <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
-                            <div style="margin: 3px 0; line-height: 1.4; font-size: 0.9em;">${truncateText(item.tweet.text, 100)}</div>
-                            <div style="font-size: 0.8em; color: #d32f2f; font-style: italic;">Reasoning: ${item.reasoning}</div>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
+            if (event.code !== 1000 && event.code !== 1001) {
+                console.error('WebSocket closed unexpectedly:', event.code, event.reason);
+                if (!filterResultDiv.innerHTML.includes('Filter Results')) {
+                    showError(filterResultDiv, '❌ Connection lost. Please try again.');
+                }
             }
-            
-            showResults(filterResultDiv, html);
-        } else {
-            showSuccess(filterResultDiv, 'No tweets found to filter.');
-        }
+        };
+        
     } catch (error) {
-        showError(filterResultDiv, `❌ Failed to filter tweets: ${error.message}`);
-    } finally {
+        showError(filterResultDiv, `❌ Failed to start filtering: ${error.message}`);
         filterTweetsBtn.disabled = false;
         filterTweetsBtn.textContent = 'Filter Tweets';
     }
 });
+
+// Helper function to display filter results
+function displayFilterResults(result) {
+    if (result && result.filtered_tweets) {
+        const filtered = result.filtered_tweets;
+        const passing = filtered.filter(item => item.pass);
+        const failing = filtered.filter(item => !item.pass);
+        
+        let html = `<h3>✅ Filter Results</h3>`;
+        html += `<p><strong>Question:</strong> "${result.question}"</p>`;
+        html += `<p><strong>Total tweets processed:</strong> ${filtered.length}</p>`;
+        html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
+        
+        if (passing.length > 0) {
+            html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets</h4>';
+            html += '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
+            
+            passing.forEach(item => {
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
+                        <div style="margin: 5px 0; line-height: 1.4;">${item.tweet.text}</div>
+                        <div style="font-size: 0.9em; color: #666; margin: 5px 0;"><a href="https://twitter.com/i/web/status/${item.tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(item.tweet.created_at)}</a></div>
+                        <div style="font-size: 0.85em; color: #2e7d32; font-style: italic;">Reasoning: ${item.reasoning}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
+        if (failing.length > 0 && failing.length <= 10) {
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (sample)</h4>';
+            html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+            
+            failing.slice(0, 5).forEach(item => {
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 8px 0; margin-bottom: 8px;">
+                        <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
+                        <div style="margin: 3px 0; line-height: 1.4; font-size: 0.9em;">${item.tweet.text}</div>
+                        <div style="font-size: 0.8em; color: #d32f2f; font-style: italic;">Reasoning: ${item.reasoning}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
+        showResults(filterResultDiv, html);
+        hideFilterResultsBtn.style.display = 'inline-block';
+        hideFilterResultsBtn.textContent = 'Hide Results';
+    } else {
+        showSuccess(filterResultDiv, '✅ No tweets found to filter.');
+    }
+}
 
 // Keyboard shortcuts
 addUsernameInput.addEventListener('keypress', (e) => {
@@ -422,5 +484,16 @@ hideUserTweetsBtn.addEventListener('click', () => {
     } else {
         userTweetsResultDiv.classList.add('show');
         hideUserTweetsBtn.textContent = 'Hide Results';
+    }
+});
+
+// Hide/Show Filter Results Handler
+hideFilterResultsBtn.addEventListener('click', () => {
+    if (filterResultDiv.classList.contains('show')) {
+        filterResultDiv.classList.remove('show');
+        hideFilterResultsBtn.textContent = 'Show Results';
+    } else {
+        filterResultDiv.classList.add('show');
+        hideFilterResultsBtn.textContent = 'Hide Results';
     }
 });
