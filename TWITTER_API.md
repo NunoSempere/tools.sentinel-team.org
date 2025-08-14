@@ -45,6 +45,27 @@ go run src/handlers.go src/main.go src/types.go
 - **GET** `/api/health`
 - Returns server status
 
+### WebSocket Filtering
+
+For long-running filter operations that may timeout with HTTP requests, use the WebSocket endpoint `/api/filter-ws`. This provides real-time progress updates and handles large datasets without timeouts.
+
+**Connection:** `wss://tweets.nunosempere.com/api/filter-ws`
+
+**Message Format:**
+- **Outgoing** (client → server): Same `FilterRequest` format as HTTP endpoint
+- **Incoming** (server → client): `WSMessage` with `type` and `data` fields
+
+**Message Types:**
+- `progress`: Real-time processing updates with `{processed, total, message}`
+- `result`: Final `FilterResponse` when complete
+- `error`: Error message if processing fails
+
+**Benefits:**
+- No timeouts for large datasets
+- Real-time progress tracking
+- Better user experience for long operations
+- Automatic rate limiting (1000 req/sec to OpenAI)
+
 ### Account Management
 
 #### Add Account
@@ -92,9 +113,15 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
 
 ### Tweet Filtering (AI-Powered)
 
-#### Filter Tweets
+#### Filter Tweets (HTTP)
 - **POST** `/api/filter`
 - Filter tweets using natural language questions with GPT-4o-mini
+- **Note:** May timeout for large datasets (>500 tweets)
+
+#### Filter Tweets (WebSocket)
+- **WebSocket** `/api/filter-ws`
+- Real-time progress updates for long-running filter operations
+- No timeout issues, ideal for large datasets
 
 **Request Body:**
 ```json
@@ -135,7 +162,7 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
 - Returns both passing and failing tweets with reasoning
 - Parallel processing for efficiency
 
-**Example:**
+**HTTP Example:**
 ```bash
 curl -X POST https://tweets.nunosempere.com/api/filter \
   -H "Content-Type: application/json" \
@@ -143,6 +170,48 @@ curl -X POST https://tweets.nunosempere.com/api/filter \
     "question": "Does this tweet mention cryptocurrency or Bitcoin?",
     "users": ["elonmusk", "VitalikButerin"]
   }'
+```
+
+**WebSocket Example (curl with websocat):**
+```bash
+# Install websocat: cargo install websocat
+echo '{"question":"Does this tweet discuss AI?","list":"ai-og"}' | \
+  websocat wss://tweets.nunosempere.com/api/filter-ws
+
+# Or use wscat (npm install -g wscat):
+echo '{"question":"Does this tweet discuss AI?","list":"ai-og"}' | \
+  wscat -c wss://tweets.nunosempere.com/api/filter-ws
+```
+
+**WebSocket Example (JavaScript):**
+```javascript
+const ws = new WebSocket('wss://tweets.nunosempere.com/api/filter-ws');
+
+ws.onopen = () => {
+  // Send filter request
+  ws.send(JSON.stringify({
+    question: "Does this tweet discuss artificial intelligence?",
+    list: "ai-og"
+  }));
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  
+  switch (message.type) {
+    case 'progress':
+      console.log(`Progress: ${message.data.processed}/${message.data.total} - ${message.data.message}`);
+      break;
+    case 'result':
+      console.log('Final result:', message.data);
+      ws.close();
+      break;
+    case 'error':
+      console.error('Error:', message.data.error);
+      ws.close();
+      break;
+  }
+};
 ```
 
 ## Response Format
@@ -265,8 +334,10 @@ curl -X POST https://tweets.nunosempere.com/api/filter \
   -d '{
     "question": "Does this tweet announce a new AI model or research?",
     "users": ["OpenAI", "AnthropicAI"]
-  }' | jq
+  }' --max-time 180 | jq
 ```
+
+Also accepts a `list` argument.
 
 ## Troubleshooting
 
