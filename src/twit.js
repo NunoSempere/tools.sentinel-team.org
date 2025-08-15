@@ -372,7 +372,6 @@ async function pollFilterJob(jobId, retryCount = 0) {
             // Show partial results while running
             if (status.status === 'running' && status.partial_results && status.partial_results.partial_tweets) {
                 const partialResult = {
-                    question: status.partial_results.question || '',
                     filtered_tweets: status.partial_results.partial_tweets,
                     summary: null // No summary yet while running
                 };
@@ -440,10 +439,7 @@ function displayPartialFilterResults(result, progress) {
             `;
         }
         
-        html += `<p><strong>Question:</strong> "${result.question}"</p>`;
-        html += `<p><strong>Tweets processed so far:</strong> ${filtered.length}</p>`;
         html += `<p><strong>Passing tweets so far:</strong> ${passing.length}</p>`;
-        html += `<p><strong>Failing tweets so far:</strong> ${failing.length}</p>`;
         
         if (passing.length > 0) {
             html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets (Partial)</h4>';
@@ -495,8 +491,6 @@ function displayFilterResults(result) {
         const failing = filtered.filter(item => !item.pass);
         
         let html = `<h3>✅ Filter Results</h3>`;
-        html += `<p><strong>Question:</strong> "${result.question}"</p>`;
-        html += `<p><strong>Total tweets processed:</strong> ${filtered.length}</p>`;
         html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
         
         // Show summary if available
