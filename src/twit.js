@@ -1,6 +1,6 @@
 // Twitter API base URL
-const API_BASE = 'http://localhost:3343/api' // 
-// const API_BASE = 'https://tweets.nunosempere.com/api';
+// const API_BASE = 'http://localhost:3343/api' // 
+const API_BASE = 'https://tweets.nunosempere.com/api';
 
 // DOM elements
 const healthCheckBtn = document.getElementById('health-check');
@@ -349,7 +349,7 @@ async function pollFilterJob(jobId, retryCount = 0) {
     while (attempts < maxAttempts) {
         try {
             const statusResponse = await apiRequest(`/filter-job/${jobId}/status`, {
-                timeout: 10000 // 10 second timeout for status checks
+                timeout: 500 // 500ms timeout for status checks
             });
             
             const status = statusResponse.data;
