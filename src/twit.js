@@ -490,13 +490,6 @@ function displayFilterResults(result) {
         let html = `<h3>Filter Results</h3>`;
         html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
         
-        // Show summary if available
-        if (result.summary) {
-            html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
-            html += `<h4 style="margin-top: 0; color: #495057;">Summary</h4>`;
-            html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
-            html += `</div>`;
-        }
         if (passing.length > 0) {
             html += '<h4 style="color: #2e7d32; margin-top: 20px;">Passing Tweets</h4>';
             html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
@@ -550,6 +543,14 @@ function displayFilterResults(result) {
             });
             
             html += '</div>';
+        }
+
+        // Show summary if available
+        if (result.summary) {
+            html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
+            html += `<h4 style="margin-top: 0; color: #495057;">Summary</h4>`;
+            html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
+            html += `</div>`;
         }
         
         showResults(filterResultDiv, html);
