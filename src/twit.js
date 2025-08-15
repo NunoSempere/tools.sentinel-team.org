@@ -355,7 +355,7 @@ async function pollFilterJob(jobId, retryCount = 0) {
             
             const status = statusResponse.data;
             
-            // Update progress display
+            // Update progress display and show partial results if available
             if (status.progress) {
                 const progressHtml = `
                     <div id="filter-progress">
@@ -369,11 +369,27 @@ async function pollFilterJob(jobId, retryCount = 0) {
                 showResults(filterResultDiv, progressHtml);
             }
             
+            // Show partial results while running
+            if (status.status === 'running' && status.partial_results && status.partial_results.partial_tweets) {
+                const partialResult = {
+                    question: status.partial_results.question || '',
+                    filtered_tweets: status.partial_results.partial_tweets,
+                    summary: null // No summary yet while running
+                };
+                
+                // Update stored results with partial data
+                window.currentFilterResults = partialResult;
+                
+                // Display partial results with progress indicator
+                displayPartialFilterResults(partialResult, status.progress);
+            }
+            
             if (status.status === 'completed') {
                 // Job completed, get final results
                 const resultsResponse = await apiRequest(`/filter-job/${jobId}/results`);
                 if (resultsResponse.data && resultsResponse.data.results) {
                     window.currentFilterResults = resultsResponse.data.results;
+                    // Display final results (replacing any partial results)
                     displayFilterResults(window.currentFilterResults);
                 } else {
                     throw new Error('Job completed but no results available');
@@ -403,6 +419,72 @@ async function pollFilterJob(jobId, retryCount = 0) {
     }
     
     throw new Error('Job timeout after 5 minutes');
+}
+
+// Helper function to display partial filter results while running
+function displayPartialFilterResults(result, progress) {
+    if (result && result.filtered_tweets) {
+        const filtered = result.filtered_tweets;
+        const passing = filtered.filter(item => item.pass);
+        const failing = filtered.filter(item => !item.pass);
+        
+        let html = `<h3>🔄 Filter Results (Processing...)</h3>`;
+        
+        // Show progress bar
+        if (progress) {
+            html += `
+                <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+                    <div style="background: #4caf50; height: 20px; width: ${progress.percentage || 0}%; transition: width 0.3s ease;"></div>
+                </div>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">${progress.message || 'Processing tweets'}: ${progress.current || 0}/${progress.total || 0}</p>
+            `;
+        }
+        
+        html += `<p><strong>Question:</strong> "${result.question}"</p>`;
+        html += `<p><strong>Tweets processed so far:</strong> ${filtered.length}</p>`;
+        html += `<p><strong>Passing tweets so far:</strong> ${passing.length}</p>`;
+        html += `<p><strong>Failing tweets so far:</strong> ${failing.length}</p>`;
+        
+        if (passing.length > 0) {
+            html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets (Partial)</h4>';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
+            
+            passing.forEach(item => {
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
+                        <div style="margin: 5px 0; line-height: 1.4;">${item.tweet.text}</div>
+                        <div style="font-size: 0.9em; color: #666; margin: 5px 0;"><a href="https://twitter.com/i/web/status/${item.tweet.tweet_id}" target="_blank" style="color: #1da1f2; text-decoration: none;">${formatDate(item.tweet.created_at)}</a></div>
+                        <div style="font-size: 0.85em; color: #2e7d32; font-style: italic;">Reasoning: ${item.reasoning}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
+        // Show sample of failing tweets if any
+        if (failing.length > 0) {
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (Partial Sample)</h4>';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+            
+            failing.slice(0, 3).forEach(item => {
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 8px 0; margin-bottom: 8px;">
+                        <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
+                        <div style="margin: 3px 0; line-height: 1.4; font-size: 0.9em;">${item.tweet.text}</div>
+                        <div style="font-size: 0.8em; color: #d32f2f; font-style: italic;">Reasoning: ${item.reasoning}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
+        showResults(filterResultDiv, html);
+        hideFilterResultsBtn.style.display = 'inline-block';
+        hideFilterResultsBtn.textContent = 'Hide Results';
+    }
 }
 
 // Helper function to display filter results
@@ -458,6 +540,24 @@ function displayFilterResults(result) {
             
 
         
+            html += '</div>';
+        }
+        
+        // Show sample of failing tweets if any
+        if (failing.length > 0) {
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (Partial Sample)</h4>';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+            
+            failing.slice(0, 3).forEach(item => {
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 8px 0; margin-bottom: 8px;">
+                        <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
+                        <div style="margin: 3px 0; line-height: 1.4; font-size: 0.9em;">${item.tweet.text}</div>
+                        <div style="font-size: 0.8em; color: #d32f2f; font-style: italic;">Reasoning: ${item.reasoning}</div>
+                    </div>
+                `;
+            });
+            
             html += '</div>';
         }
         
