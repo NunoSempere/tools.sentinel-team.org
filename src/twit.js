@@ -414,9 +414,15 @@ function displayFilterResults(result) {
         html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
         
         // Show summary if available
+        if (result.summary) {
+            html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
+            html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
+            html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
+            html += `</div>`;
+        }
         if (passing.length > 0) {
             html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets</h4>';
-            html += '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
             
             passing.forEach(item => {
                 html += `
@@ -432,11 +438,11 @@ function displayFilterResults(result) {
             html += '</div>';
         }
         
-        if (failing.length > 0 && failing.length <= 10) {
-            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (sample)</h4>';
-            html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
+        if (failing.length > 0) {
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets</h4>';
+            html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
-            failing.slice(0, 5).forEach(item => {
+            failing.forEach(item => {
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 8px 0; margin-bottom: 8px;">
                         <div style="font-weight: bold; color: #1a1a1a;">@${item.tweet.username}</div>
@@ -446,12 +452,7 @@ function displayFilterResults(result) {
                 `;
             });
             
-            if (result.summary) {
-                html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
-                html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
-                html += `<div style="margin-bottom: 0; margin-left: 5px; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
-                html += `</div>`;
-            }
+
         
             html += '</div>';
         }
