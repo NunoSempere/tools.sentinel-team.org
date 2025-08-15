@@ -547,8 +547,8 @@ function displayFilterResults(result) {
 
         // Show summary if available
         if (result.summary) {
-            html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
-            html += `<h4 style="margin-top: 0; color: #495057;">Summary</h4>`;
+            html += `<div style="background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
+            html += `<h3 style="margin-top: 0; color: #007bff;">Summary</h3>`;
             html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
             html += `</div>`;
         }
