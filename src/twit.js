@@ -101,9 +101,9 @@ healthCheckBtn.addEventListener('click', async () => {
     try {
         const result = await apiRequest('/health');
         console.log(result)
-        showSuccess(healthResultDiv, `✅ Server is healthy; status: ${result.status}`);
+        showSuccess(healthResultDiv, `Server is healthy; status: ${result.status}`);
     } catch (error) {
-        showError(healthResultDiv, `❌ Health check failed: ${error.message}`);
+        showError(healthResultDiv, `Health check failed: ${error.message}`);
     } finally {
         healthCheckBtn.disabled = false;
         healthCheckBtn.textContent = 'Check Server Health';
@@ -132,11 +132,11 @@ addAccountBtn.addEventListener('click', async () => {
             body: JSON.stringify(body)
         });
         
-        showSuccess(accountResultDiv, `✅ ${result.message}`);
+        showSuccess(accountResultDiv, `${result.message}`);
         addUsernameInput.value = '';
         addListInput.value = '';
     } catch (error) {
-        showError(accountResultDiv, `❌ Failed to add account: ${error.message}`);
+        showError(accountResultDiv, `Failed to add account: ${error.message}`);
     } finally {
         addAccountBtn.disabled = false;
         addAccountBtn.textContent = 'Add Account';
@@ -171,7 +171,7 @@ showAccountsBtn.addEventListener('click', async () => {
             hideAccountsBtn.style.display = 'inline-block';
         }
     } catch (error) {
-        showError(accountResultDiv, `❌ Failed to get accounts: ${error.message}`);
+        showError(accountResultDiv, `Failed to get accounts: ${error.message}`);
     } finally {
         showAccountsBtn.disabled = false;
         showAccountsBtn.textContent = 'Show Monitored Accounts';
@@ -223,7 +223,7 @@ getAllTweetsBtn.addEventListener('click', async () => {
             showSuccess(tweetsResultDiv, 'No tweets found.');
         }
     } catch (error) {
-        showError(tweetsResultDiv, `❌ Failed to get tweets: ${error.message}`);
+        showError(tweetsResultDiv, `Failed to get tweets: ${error.message}`);
     } finally {
         getAllTweetsBtn.disabled = false;
         getAllTweetsBtn.textContent = 'Get All Tweets';
@@ -267,7 +267,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
             showSuccess(userTweetsResultDiv, `No tweets found for @${username}.`);
         }
     } catch (error) {
-        showError(userTweetsResultDiv, `❌ Failed to get tweets for @${username}: ${error.message}`);
+        showError(userTweetsResultDiv, `Failed to get tweets for @${username}: ${error.message}`);
     } finally {
         getUserTweetsBtn.disabled = false;
         getUserTweetsBtn.textContent = 'Get User Tweets';
@@ -299,7 +299,7 @@ filterTweetsBtn.addEventListener('click', async () => {
     filterTweetsBtn.textContent = 'Starting...';
     
     // Show initial progress
-    showResults(filterResultDiv, '<div id="filter-progress"><p>🚀 Creating filter job...</p></div>');
+    showResults(filterResultDiv, '<div id="filter-progress"><p>Creating filter job...</p></div>');
     
     try {
         const requestBody = { question: question };
@@ -326,7 +326,7 @@ filterTweetsBtn.addEventListener('click', async () => {
         
         const jobId = jobResponse.data.job_id;
         filterTweetsBtn.textContent = 'Filtering...';
-        showResults(filterResultDiv, '<div id="filter-progress"><p>🔄 Job created, starting polling...</p></div>');
+        showResults(filterResultDiv, '<div id="filter-progress"><p>Job created, starting polling...</p></div>');
         
         // Initialize results container
         window.currentFilterResults = null;
@@ -335,7 +335,7 @@ filterTweetsBtn.addEventListener('click', async () => {
         await pollFilterJob(jobId);
         
     } catch (error) {
-        showError(filterResultDiv, `❌ Failed to start filtering: ${error.message}`);
+        showError(filterResultDiv, `Failed to start filtering: ${error.message}`);
         filterTweetsBtn.disabled = false;
         filterTweetsBtn.textContent = 'Filter Tweets';
     }
@@ -359,10 +359,7 @@ async function pollFilterJob(jobId, retryCount = 0) {
             if (status.progress) {
                 const progressHtml = `
                     <div id="filter-progress">
-                        <p>🔄 ${status.progress.message || 'Processing tweets'}: ${status.progress.current || 0}/${status.progress.total || 0}</p>
-                        <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
-                            <div style="background: #4caf50; height: 20px; width: ${status.progress.percentage || 0}%; transition: width 0.3s ease;"></div>
-                        </div>
+                        <p>${status.progress.message || 'Processing tweets'}</p>
                         <p style="font-size: 0.9em; color: #666;">Status: ${status.status}</p>
                     </div>
                 `;
@@ -427,7 +424,7 @@ function displayPartialFilterResults(result, progress) {
         const passing = filtered.filter(item => item.pass);
         const failing = filtered.filter(item => !item.pass);
         
-        let html = `<h3>🔄 Filter Results (Processing...)</h3>`;
+        let html = `<h3>Filter Results (Processing...)</h3>`;
         
         // Show progress bar
         if (progress) {
@@ -442,7 +439,7 @@ function displayPartialFilterResults(result, progress) {
         html += `<p><strong>Passing tweets so far:</strong> ${passing.length}</p>`;
         
         if (passing.length > 0) {
-            html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets (Partial)</h4>';
+            html += '<h4 style="color: #2e7d32; margin-top: 20px;">Passing Tweets (Partial)</h4>';
             html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
             
             passing.forEach(item => {
@@ -461,7 +458,7 @@ function displayPartialFilterResults(result, progress) {
         
         // Show sample of failing tweets if any
         if (failing.length > 0) {
-            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (Partial Sample)</h4>';
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">Non-Passing Tweets (Partial Sample)</h4>';
             html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
             failing.slice(0, 3).forEach(item => {
@@ -490,18 +487,18 @@ function displayFilterResults(result) {
         const passing = filtered.filter(item => item.pass);
         const failing = filtered.filter(item => !item.pass);
         
-        let html = `<h3>✅ Filter Results</h3>`;
+        let html = `<h3>Filter Results</h3>`;
         html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
         
         // Show summary if available
         if (result.summary) {
             html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
-            html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
+            html += `<h4 style="margin-top: 0; color: #495057;">Summary</h4>`;
             html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
             html += `</div>`;
         }
         if (passing.length > 0) {
-            html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets</h4>';
+            html += '<h4 style="color: #2e7d32; margin-top: 20px;">Passing Tweets</h4>';
             html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
             
             passing.forEach(item => {
@@ -519,7 +516,7 @@ function displayFilterResults(result) {
         }
         
         if (failing.length > 0) {
-            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets</h4>';
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">Non-Passing Tweets</h4>';
             html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
             failing.forEach(item => {
@@ -539,7 +536,7 @@ function displayFilterResults(result) {
         
         // Show sample of failing tweets if any
         if (failing.length > 0) {
-            html += '<h4 style="color: #d32f2f; margin-top: 20px;">❌ Non-Passing Tweets (Partial Sample)</h4>';
+            html += '<h4 style="color: #d32f2f; margin-top: 20px;">Non-Passing Tweets (Partial Sample)</h4>';
             html += '<div style="border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px;">';
             
             failing.slice(0, 3).forEach(item => {
@@ -559,7 +556,7 @@ function displayFilterResults(result) {
         hideFilterResultsBtn.style.display = 'inline-block';
         hideFilterResultsBtn.textContent = 'Hide Results';
     } else {
-        showSuccess(filterResultDiv, '✅ No tweets found to filter.');
+        showSuccess(filterResultDiv, 'No tweets found to filter.');
     }
 }
 
