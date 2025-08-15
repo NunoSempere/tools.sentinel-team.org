@@ -78,6 +78,7 @@ async function apiRequest(endpoint, options = {}) {
         
         // clearTimeout(timeoutId);
         
+	console.log(response)
         const data = await response.json();
         
         if (!response.ok) {
