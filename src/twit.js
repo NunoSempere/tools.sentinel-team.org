@@ -65,7 +65,7 @@ function parseMarkdown(text) {
 async function apiRequest(endpoint, options = {}) {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
+        // const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
         
         const response = await fetch(`${API_BASE}${endpoint}`, {
             headers: {
@@ -76,7 +76,7 @@ async function apiRequest(endpoint, options = {}) {
             signal: controller.signal
         });
         
-        clearTimeout(timeoutId);
+        // clearTimeout(timeoutId);
         
 	console.log(response)
         const data = await response.json();
