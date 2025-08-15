@@ -349,7 +349,7 @@ async function pollFilterJob(jobId, retryCount = 0) {
     while (attempts < maxAttempts) {
         try {
             const statusResponse = await apiRequest(`/filter-job/${jobId}/status`, {
-                timeout: 500 // 500ms timeout for status checks
+                timeout: 200 // 200ms timeout for status checks
             });
             
             const status = statusResponse.data;
@@ -382,14 +382,15 @@ async function pollFilterJob(jobId, retryCount = 0) {
             }
             
             // Job still in progress, wait before next poll
-            const delay = Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
+            const delay = 200  // 200 ms
+            // const delay =  Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
             await new Promise(resolve => setTimeout(resolve, delay));
             attempts++;
             
         } catch (networkError) {
             console.warn(`Network error during polling (attempt ${retryCount + 1}):`, networkError);
             if (retryCount < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 return pollFilterJob(jobId, retryCount + 1);
             } else {
                 throw new Error(`Network error after ${maxRetries} retries: ${networkError.message}`);
@@ -413,13 +414,6 @@ function displayFilterResults(result) {
         html += `<p><strong>Passing tweets:</strong> ${passing.length}</p>`;
         
         // Show summary if available
-        if (result.summary) {
-            html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
-            html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
-            html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
-            html += `</div>`;
-        }
-        
         if (passing.length > 0) {
             html += '<h4 style="color: #2e7d32; margin-top: 20px;">✅ Passing Tweets</h4>';
             html += '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e5e5; padding: 10px; border-radius: 4px; margin-bottom: 20px;">';
@@ -452,6 +446,13 @@ function displayFilterResults(result) {
                 `;
             });
             
+            if (result.summary) {
+                html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
+                html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
+                html += `<div style="margin-bottom: 0; margin-left: 5px; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
+                html += `</div>`;
+            }
+        
             html += '</div>';
         }
         
