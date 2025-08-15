@@ -1,5 +1,6 @@
 // Twitter API base URL
-const API_BASE = 'http://localhost:3343/api' // 'https://tweets.nunosempere.com/api';
+const API_BASE = 'http://localhost:3343/api' // 
+// const API_BASE = 'https://tweets.nunosempere.com/api';
 
 // DOM elements
 const healthCheckBtn = document.getElementById('health-check');
@@ -272,7 +273,7 @@ getUserTweetsBtn.addEventListener('click', async () => {
     }
 });
 
-// Filter Tweets Handler (WebSocket)
+// Filter Tweets Handler (Polling)
 filterTweetsBtn.addEventListener('click', async () => {
     const question = filterQuestionInput.value.trim();
     const list = filterListInput.value.trim();
@@ -294,10 +295,10 @@ filterTweetsBtn.addEventListener('click', async () => {
     }
     
     filterTweetsBtn.disabled = true;
-    filterTweetsBtn.textContent = 'Connecting...';
+    filterTweetsBtn.textContent = 'Starting...';
     
     // Show initial progress
-    showResults(filterResultDiv, '<div id="filter-progress"><p>🔌 Connecting to server...</p></div>');
+    showResults(filterResultDiv, '<div id="filter-progress"><p>🚀 Creating filter job...</p></div>');
     
     try {
         const requestBody = { question: question };
@@ -315,74 +316,22 @@ filterTweetsBtn.addEventListener('click', async () => {
             requestBody.users = users;
         }
         
-        // Create WebSocket connection
-        const wsUrl = API_BASE.replace('https://', 'wss://').replace('http://', 'ws://') + '/filter-ws';
-        const ws = new WebSocket(wsUrl);
+        // Create filter job
+        const jobResponse = await apiRequest('/filter-job', {
+            method: 'POST',
+            body: JSON.stringify(requestBody),
+            timeout: 60000 // 1 minute timeout for job creation
+        });
         
-        ws.onopen = () => {
-            filterTweetsBtn.textContent = 'Filtering...';
-            showResults(filterResultDiv, '<div id="filter-progress"><p>🚀 Starting tweet filtering...</p></div>');
-            // Send filter request
-            ws.send(JSON.stringify(requestBody));
-        };
+        const jobId = jobResponse.data.job_id;
+        filterTweetsBtn.textContent = 'Filtering...';
+        showResults(filterResultDiv, '<div id="filter-progress"><p>🔄 Job created, starting polling...</p></div>');
         
-        ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            
-            switch (message.type) {
-                case 'progress':
-                    const progressHtml = `
-                        <div id="filter-progress">
-                            <p>🔄 Processing tweets: ${message.data.processed}/${message.data.total}</p>
-                            <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
-                                <div style="background: #4caf50; height: 20px; width: ${(message.data.processed / message.data.total * 100)}%; transition: width 0.3s ease;"></div>
-                            </div>
-                            <p style="font-size: 0.9em; color: #666;">${message.data.message}</p>
-                        </div>
-                    `;
-                    showResults(filterResultDiv, progressHtml);
-                    break;
-                    
-                case 'result':
-                    // Store the tweets data and display immediately
-                    window.currentFilterResults = message.data;
-                    displayFilterResults(message.data);
-                    break;
-                    
-                case 'summary':
-                    // Update the display with the summary
-                    if (window.currentFilterResults) {
-                        window.currentFilterResults.summary = message.data.summary;
-                        displayFilterResults(window.currentFilterResults);
-                    }
-                    ws.close();
-                    break;
-                    
-                case 'error':
-                    ws.close();
-                    showError(filterResultDiv, `❌ Filtering failed: ${message.data.error}`);
-                    break;
-            }
-        };
+        // Initialize results container
+        window.currentFilterResults = null;
         
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            showError(filterResultDiv, '❌ Connection error. Please try again.');
-            filterTweetsBtn.disabled = false;
-            filterTweetsBtn.textContent = 'Filter Tweets';
-        };
-        
-        ws.onclose = (event) => {
-            filterTweetsBtn.disabled = false;
-            filterTweetsBtn.textContent = 'Filter Tweets';
-            
-            if (event.code !== 1000 && event.code !== 1001) {
-                console.error('WebSocket closed unexpectedly:', event.code, event.reason);
-                if (!filterResultDiv.innerHTML.includes('Filter Results')) {
-                    showError(filterResultDiv, '❌ Connection lost. Please try again.');
-                }
-            }
-        };
+        // Start polling for job status
+        await pollFilterJob(jobId);
         
     } catch (error) {
         showError(filterResultDiv, `❌ Failed to start filtering: ${error.message}`);
@@ -390,6 +339,66 @@ filterTweetsBtn.addEventListener('click', async () => {
         filterTweetsBtn.textContent = 'Filter Tweets';
     }
 });
+
+// Function to poll filter job status
+async function pollFilterJob(jobId, retryCount = 0) {
+    const maxRetries = 3;
+    const maxAttempts = 300; // 5 minute timeout
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        try {
+            const statusResponse = await apiRequest(`/filter-job/${jobId}/status`, {
+                timeout: 10000 // 10 second timeout for status checks
+            });
+            
+            const status = statusResponse.data;
+            
+            // Update progress display
+            if (status.progress) {
+                const progressHtml = `
+                    <div id="filter-progress">
+                        <p>🔄 ${status.progress.message || 'Processing tweets'}: ${status.progress.current || 0}/${status.progress.total || 0}</p>
+                        <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+                            <div style="background: #4caf50; height: 20px; width: ${status.progress.percentage || 0}%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <p style="font-size: 0.9em; color: #666;">Status: ${status.status}</p>
+                    </div>
+                `;
+                showResults(filterResultDiv, progressHtml);
+            }
+            
+            if (status.status === 'completed') {
+                // Job completed, get final results
+                const resultsResponse = await apiRequest(`/filter-job/${jobId}/results`);
+                window.currentFilterResults = resultsResponse.data.results;
+                displayFilterResults(window.currentFilterResults);
+                
+                filterTweetsBtn.disabled = false;
+                filterTweetsBtn.textContent = 'Filter Tweets';
+                return;
+            } else if (status.status === 'failed') {
+                throw new Error(status.error_message || 'Job failed');
+            }
+            
+            // Job still in progress, wait before next poll
+            const delay = Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
+            await new Promise(resolve => setTimeout(resolve, delay));
+            attempts++;
+            
+        } catch (networkError) {
+            console.warn(`Network error during polling (attempt ${retryCount + 1}):`, networkError);
+            if (retryCount < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return pollFilterJob(jobId, retryCount + 1);
+            } else {
+                throw new Error(`Network error after ${maxRetries} retries: ${networkError.message}`);
+            }
+        }
+    }
+    
+    throw new Error('Job timeout after 5 minutes');
+}
 
 // Helper function to display filter results
 function displayFilterResults(result) {
@@ -408,12 +417,6 @@ function displayFilterResults(result) {
             html += `<div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
             html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
             html += `<div style="margin-bottom: 0; line-height: 1.5;">${parseMarkdown(result.summary)}</div>`;
-            html += `</div>`;
-        } else {
-            // Show placeholder for summary while we wait for it
-            html += `<div id="summary-placeholder" style="background: #f8f9fa; border-left: 4px solid #6c757d; padding: 15px; margin: 15px 0; border-radius: 4px;">`;
-            html += `<h4 style="margin-top: 0; color: #495057;">📊 Summary</h4>`;
-            html += `<p style="margin-bottom: 0; line-height: 1.5; color: #6c757d; font-style: italic;">Generating summary...</p>`;
             html += `</div>`;
         }
         
@@ -522,10 +525,6 @@ hideFilterResultsBtn.addEventListener('click', () => {
     if (filterResultDiv.classList.contains('show')) {
         filterResultDiv.classList.remove('show');
         hideFilterResultsBtn.textContent = 'Show Results';
-        // Clean up stored results when hiding
-        if (window.currentFilterResults) {
-            delete window.currentFilterResults;
-        }
     } else {
         filterResultDiv.classList.add('show');
         hideFilterResultsBtn.textContent = 'Hide Results';

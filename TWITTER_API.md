@@ -39,33 +39,30 @@ make run
 go run src/handlers.go src/main.go src/types.go
 ```
 
+**Note:** The server automatically creates the `filter_jobs` table on first startup if it doesn't exist.
+
 ## API Reference
 
 ### Health Check
 - **GET** `/api/health`
 - Returns server status
 
-### WebSocket Filtering
+### Job-Based Filtering (Polling - Recommended)
 
-For long-running filter operations that may timeout with HTTP requests, use the WebSocket endpoint `/api/filter-ws`. This provides real-time progress updates and handles large datasets without timeouts.
+For reliable, long-running filter operations, use the new job-based polling endpoints. This approach is more stable than WebSockets and handles large datasets without connection issues.
 
-**Connection:** `wss://tweets.nunosempere.com/api/filter-ws`
-
-**Message Format:**
-- **Outgoing** (client → server): Same `FilterRequest` format as HTTP endpoint
-- **Incoming** (server → client): `WSMessage` with `type` and `data` fields
-
-**Message Types:**
-- `progress`: Real-time processing updates with `{processed, total, message}`
-- `result`: Filtered tweets sent immediately (without summary)
-- `summary`: Summary sent separately after tweets for faster response
-- `error`: Error message if processing fails
+**Workflow:**
+1. **Create Job:** `POST /api/filter-job` - Returns job ID immediately
+2. **Poll Status:** `GET /api/filter-job/{id}/status` - Check progress and get partial results
+3. **Get Results:** `GET /api/filter-job/{id}/results` - Retrieve complete results when done
 
 **Benefits:**
-- No timeouts for large datasets
-- Real-time progress tracking
-- Better user experience for long operations
-- Automatic rate limiting (1000 req/sec to OpenAI)
+- **Reliable:** No connection timeouts or WebSocket brittleness
+- **Resumable:** Jobs survive browser refreshes and network interruptions
+- **Scalable:** Background processing with database persistence
+- **Progress Tracking:** Real-time progress via polling (1-2 second intervals)
+- **Infrastructure Friendly:** Works with all proxies, firewalls, and load balancers
+- **Job Persistence:** Completed jobs are retained for 24 hours before automatic cleanup
 
 ### Account Management
 
@@ -114,15 +111,18 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
 
 ### Tweet Filtering (AI-Powered)
 
-#### Filter Tweets (HTTP)
+#### Filter Tweets (HTTP - Small Datasets)
 - **POST** `/api/filter`
 - Filter tweets using natural language questions with GPT-4o-mini
 - **Note:** May timeout for large datasets (>500 tweets)
+- **Recommended for:** Quick filters on small datasets
 
-#### Filter Tweets (WebSocket)
-- **WebSocket** `/api/filter-ws`
-- Real-time progress updates for long-running filter operations
-- No timeout issues, ideal for large datasets
+#### Filter Tweets (Job-Based Polling - Recommended)
+- **POST** `/api/filter-job` - Create filter job
+- **GET** `/api/filter-job/{id}/status` - Check job progress
+- **GET** `/api/filter-job/{id}/results` - Get completed results
+- No timeout issues, reliable for any dataset size
+- **Recommended for:** All production use cases
 
 **Request Body:**
 ```json
@@ -163,7 +163,7 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
 - Returns both passing and failing tweets with reasoning
 - Parallel processing for efficiency
 
-**HTTP Example:**
+**HTTP Example (Small Datasets):**
 ```bash
 curl -X POST https://tweets.nunosempere.com/api/filter \
   -H "Content-Type: application/json" \
@@ -173,50 +173,117 @@ curl -X POST https://tweets.nunosempere.com/api/filter \
   }'
 ```
 
-**WebSocket Example (curl with websocat):**
-```bash
-# Install websocat: cargo install websocat
-echo '{"question":"Does this tweet discuss AI?","list":"ai-og"}' | \
-  websocat wss://tweets.nunosempere.com/api/filter-ws
+**Job-Based Polling Example (Recommended):**
 
-# Or use wscat (npm install -g wscat):
-echo '{"question":"Does this tweet discuss AI?","list":"ai-og"}' | \
-  wscat -c wss://tweets.nunosempere.com/api/filter-ws
+**Note:** Examples require [jq](https://stedolan.github.io/jq/) for JSON processing.
+
+```bash
+# 1. Create filter job
+JOB_RESPONSE=$(curl -X POST https://tweets.nunosempere.com/api/filter-job \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "Does this tweet discuss artificial intelligence?",
+    "list": "ai-og"
+  }')
+
+# Extract job ID
+JOB_ID=$(echo $JOB_RESPONSE | jq -r '.data.job_id')
+echo "Created job: $JOB_ID"
+
+# 2. Poll for status until complete
+while true; do
+  STATUS=$(curl -s "https://tweets.nunosempere.com/api/filter-job/$JOB_ID/status")
+  CURRENT_STATUS=$(echo $STATUS | jq -r '.data.status')
+  
+  echo "Status: $CURRENT_STATUS"
+  
+  if [ "$CURRENT_STATUS" = "completed" ]; then
+    echo "Job completed!"
+    break
+  elif [ "$CURRENT_STATUS" = "failed" ]; then
+    echo "Job failed: $(echo $STATUS | jq -r '.data.error_message')"
+    exit 1
+  fi
+  
+  # Show progress
+  echo $STATUS | jq '.data.progress'
+  
+  sleep 2
+done
+
+# 3. Get results
+curl "https://tweets.nunosempere.com/api/filter-job/$JOB_ID/results" | jq
 ```
 
-**WebSocket Example (JavaScript):**
+**JavaScript Polling Client:**
 ```javascript
-const ws = new WebSocket('wss://tweets.nunosempere.com/api/filter-ws');
-
-ws.onopen = () => {
-  // Send filter request
-  ws.send(JSON.stringify({
-    question: "Does this tweet discuss artificial intelligence?",
-    list: "ai-og"
-  }));
-};
-
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  
-  switch (message.type) {
-    case 'progress':
-      console.log(`Progress: ${message.data.processed}/${message.data.total} - ${message.data.message}`);
-      break;
-    case 'result':
-      console.log('Filtered tweets received:', message.data);
-      // Note: Summary will arrive separately
-      break;
-    case 'summary':
-      console.log('Summary received:', message.data.summary);
-      ws.close(); // Both tweets and summary now received
-      break;
-    case 'error':
-      console.error('Error:', message.data.error);
-      ws.close();
-      break;
+class FilterJobClient {
+  async startFilter(request) {
+    // 1. Create job
+    const job = await fetch('/api/filter-job', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request)
+    }).then(r => r.json());
+    
+    // 2. Poll for updates
+    return this.pollForCompletion(job.data.job_id);
   }
-};
+  
+  async pollForCompletion(jobId, retryCount = 0) {
+    const pollInterval = 1000; // Start with 1 second
+    let attempts = 0;
+    
+    while (attempts < 300) { // 5 minute timeout
+      try {
+        const status = await fetch(`/api/filter-job/${jobId}/status`)
+          .then(r => r.json());
+        
+        // Update UI with progress
+        this.updateProgress(status.data);
+      
+      if (status.data.status === 'completed') {
+        return await fetch(`/api/filter-job/${jobId}/results`)
+          .then(r => r.json());
+      }
+      
+      if (status.data.status === 'failed') {
+        throw new Error(status.data.error_message);
+      }
+      
+        // Exponential backoff up to 5 seconds
+        const delay = Math.min(pollInterval * Math.pow(1.5, attempts), 5000);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        attempts++;
+      } catch (networkError) {
+        console.warn(`Network error during polling (attempt ${retryCount + 1}):`, networkError);
+        if (retryCount < 3) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return this.pollForCompletion(jobId, retryCount + 1);
+        } else {
+          throw new Error(`Network error after 3 retries: ${networkError.message}`);
+        }
+      }
+    }
+    
+    throw new Error('Job timeout after 5 minutes');
+  }
+
+  updateProgress(data) {
+    console.log(`Progress: ${data.progress.current}/${data.progress.total} (${data.progress.percentage}%) - ${data.progress.message}`);
+  }
+}
+
+// Usage
+const client = new FilterJobClient();
+client.startFilter({
+  question: "Does this tweet discuss AI?",
+  list: "ai-og"
+}).then(results => {
+  console.log('Filter completed:', results.data.results);
+}).catch(error => {
+  console.error('Filter failed:', error);
+});
 ```
 
 ## Response Format
