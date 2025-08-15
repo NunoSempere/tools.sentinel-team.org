@@ -65,7 +65,7 @@ function parseMarkdown(text) {
 async function apiRequest(endpoint, options = {}) {
     try {
         const controller = new AbortController();
-        // const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
+        const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
         
         const response = await fetch(`${API_BASE}${endpoint}`, {
             headers: {
@@ -76,7 +76,7 @@ async function apiRequest(endpoint, options = {}) {
             signal: controller.signal
         });
         
-        // clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
         
 	console.log(response)
         const data = await response.json();
@@ -372,8 +372,12 @@ async function pollFilterJob(jobId, retryCount = 0) {
             if (status.status === 'completed') {
                 // Job completed, get final results
                 const resultsResponse = await apiRequest(`/filter-job/${jobId}/results`);
-                window.currentFilterResults = resultsResponse.data.results;
-                displayFilterResults(window.currentFilterResults);
+                if (resultsResponse.data && resultsResponse.data.results) {
+                    window.currentFilterResults = resultsResponse.data.results;
+                    displayFilterResults(window.currentFilterResults);
+                } else {
+                    throw new Error('Job completed but no results available');
+                }
                 
                 filterTweetsBtn.disabled = false;
                 filterTweetsBtn.textContent = 'Filter Tweets';
@@ -383,8 +387,7 @@ async function pollFilterJob(jobId, retryCount = 0) {
             }
             
             // Job still in progress, wait before next poll
-            const delay = 200  // 200 ms
-            // const delay =  Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
+            const delay = Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
             await new Promise(resolve => setTimeout(resolve, delay));
             attempts++;
             
