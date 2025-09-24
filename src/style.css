@@ -51,6 +51,25 @@ main {
     font-weight: 400;
 }
 
+.account-subsection {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.account-subsection:last-child {
+    margin-bottom: 0;
+}
+
+.account-subsection h3 {
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
 .tool-section p {
     color: #666;
     margin-bottom: 20px;

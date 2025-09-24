@@ -12,6 +12,7 @@ const addAccountBtn = document.getElementById('add-account');
 const showAccountsBtn = document.getElementById('show-accounts');
 const hideAccountsBtn = document.getElementById('hide-accounts');
 const accountResultDiv = document.getElementById('account-result');
+const monitoredAccountsResultDiv = document.getElementById('monitored-accounts-result');
 
 const tweetsLimitInput = document.getElementById('tweets-limit');
 const tweetsListInput = document.getElementById('tweets-list');
@@ -162,16 +163,16 @@ showAccountsBtn.addEventListener('click', async () => {
                 `;
             });
             html += '</ul>';
-            showResults(accountResultDiv, html);
+            showResults(monitoredAccountsResultDiv, html);
             showAccountsBtn.style.display = 'none';
             hideAccountsBtn.style.display = 'inline-block';
         } else {
-            showResults(accountResultDiv, '<h3>Monitored Accounts</h3><p>No accounts found in database.</p>');
+            showResults(monitoredAccountsResultDiv, '<h3>Monitored Accounts</h3><p>No accounts found in database.</p>');
             showAccountsBtn.style.display = 'none';
             hideAccountsBtn.style.display = 'inline-block';
         }
     } catch (error) {
-        showError(accountResultDiv, `Failed to get accounts: ${error.message}`);
+        showError(monitoredAccountsResultDiv, `Failed to get accounts: ${error.message}`);
     } finally {
         showAccountsBtn.disabled = false;
         showAccountsBtn.textContent = 'Show Monitored Accounts';
@@ -180,8 +181,8 @@ showAccountsBtn.addEventListener('click', async () => {
 
 // Hide Accounts Handler
 hideAccountsBtn.addEventListener('click', () => {
-    accountResultDiv.classList.remove('show');
-    accountResultDiv.innerHTML = '';
+    monitoredAccountsResultDiv.classList.remove('show');
+    monitoredAccountsResultDiv.innerHTML = '';
     showAccountsBtn.style.display = 'inline-block';
     hideAccountsBtn.style.display = 'none';
 });

@@ -25,26 +25,41 @@
 
         <section class="tool-section">
             <h2>Account Management</h2>
-						<p>Add or view monitored accounts from the database.</p><p style="font-size: 15px"> To add many at once, consider downloading the list of people you follow. (More &gt; Settings and Privacy &gt; Your account &gt; Download an archive of your data)</p>
+            <p>Add or view monitored accounts from the database.</p>
             
-            <div class="input-grid">
-                <div class="input-group">
-                    <label for="add-username">Twitter Username:</label>
-                    <input type="text" id="add-username" placeholder="elonmusk" aria-label="Twitter username to add">
+            <div class="account-subsection">
+                <h3>Add Account</h3>
+                <p style="font-size: 15px">To add many at once, consider downloading the list of people you follow. (More &gt; Settings and Privacy &gt; Your account &gt; Download an archive of your data)</p>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="add-username">Twitter Username:</label>
+                        <input type="text" id="add-username" placeholder="elonmusk" aria-label="Twitter username to add">
+                    </div>
+                    <div class="input-group">
+                        <label for="add-list">List Name (optional):</label>
+                        <input type="text" id="add-list" placeholder="tech" aria-label="Optional list name">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="add-list">List Name (optional):</label>
-                    <input type="text" id="add-list" placeholder="tech" aria-label="Optional list name">
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="add-account" class="primary-btn">Add Account</button>
                 </div>
+                
+                <div id="account-result" class="results-container"></div>
             </div>
             
-            <div style="margin-bottom: 20px;">
-                <button id="add-account" class="primary-btn">Add Account</button>
-                <button id="show-accounts" class="secondary-btn">Show Monitored Accounts</button>
-                <button id="hide-accounts" class="secondary-btn" style="display: none;">Hide Accounts</button>
+            <div class="account-subsection">
+                <h3>View Monitored Accounts</h3>
+                <p>View all accounts currently being monitored by the system.</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="show-accounts" class="secondary-btn">Show Monitored Accounts</button>
+                    <button id="hide-accounts" class="secondary-btn" style="display: none;">Hide Accounts</button>
+                </div>
+                
+                <div id="monitored-accounts-result" class="results-container"></div>
             </div>
-            
-            <div id="account-result" class="results-container"></div>
         </section>
 
         <section class="tool-section">
