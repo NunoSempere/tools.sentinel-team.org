@@ -74,6 +74,95 @@ main {
     margin-bottom: 15px;
 }
 
+
+
+.list-container {
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.list-header {
+    display: flex;
+    background: #f8f9fa;
+    font-weight: 500;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.list-header > div {
+    padding: 12px;
+}
+
+.list-header > div:nth-child(1) {
+    flex: 0 0 40%;
+}
+
+.list-header > div:nth-child(2) {
+    flex: 0 0 20%;
+    text-align: center;
+}
+
+.list-header > div:nth-child(3) {
+    flex: 0 0 40%;
+    text-align: right;
+}
+
+.list-item {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.list-row {
+    display: flex;
+    align-items: center;
+}
+
+.list-row > div {
+    padding: 12px;
+}
+
+.list-row > div:nth-child(1) {
+    flex: 0 0 40%;
+}
+
+.list-row > div:nth-child(2) {
+    flex: 0 0 20%;
+    text-align: center;
+}
+
+.list-row > div:nth-child(3) {
+    flex: 0 0 40%;
+    text-align: right;
+}
+
+.list-details {
+    padding: 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    display: none;
+}
+
+.list-details.show {
+    display: block;
+}
+
+.account-chips-container {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.account-chip {
+    display: inline-block;
+    background: #fff;
+    padding: 4px 8px;
+    margin: 2px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    border: 1px solid #ddd;
+}
+
 .tool-section p {
     color: #666;
     margin-bottom: 20px;

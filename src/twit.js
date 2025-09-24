@@ -244,34 +244,31 @@ showListsBtn.addEventListener('click', async () => {
         
         if (result.data && result.data.length > 0) {
             let html = '<h3>All Lists</h3>';
-            html += '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
-            html += '<thead><tr><th style="text-align: left; padding: 12px; border-bottom: 2px solid #e5e5e5; font-weight: 500;">List Name</th><th style="text-align: center; padding: 12px; border-bottom: 2px solid #e5e5e5; font-weight: 500;">Accounts</th><th style="text-align: right; padding: 12px; border-bottom: 2px solid #e5e5e5; font-weight: 500;">Actions</th></tr></thead>';
-            html += '<tbody>';
+            html += '<div class="list-container">';
+            html += '<div class="list-header"><div>List Name</div><div>Accounts</div><div>Actions</div></div>';
             result.data.forEach((list, index) => {
                 const accountCount = list.count || 0;
                 const listId = `list-${index}`;
                 html += `
-                    <tr style="border-bottom: 1px solid #f0f0f0;">
-                        <td style="padding: 12px;"><span class="method-name">${list.name}</span></td>
-                        <td style="padding: 12px; text-align: center;"><span class="method-value">${accountCount}</span></td>
-                        <td style="padding: 12px; text-align: right;"><button class="secondary-btn toggle-list-btn" data-listid="${listId}">Show Accounts</button></td>
-                    </tr>
-                    <tr id="${listId}" style="display: none;">
-                        <td colspan="3" style="padding: 0 12px 12px 12px; background: #f8f9fa;">
-                            <div style="padding: 10px; border-top: 1px solid #eee;">
-                                <strong>Accounts:</strong>
-                                <div style="margin-top: 8px;">
-                                    ${list.usernames && list.usernames.length > 0 ? 
-                                        list.usernames.map(username => `<span style="display: inline-block; background: #fff; padding: 4px 8px; margin: 2px; border-radius: 3px; font-size: 0.9em; border: 1px solid #ddd;">@${username}</span>`).join('') :
-                                        '<em>No accounts in this list</em>'
-                                    }
-                                </div>
+                    <div class="list-item">
+                        <div class="list-row">
+                            <div><span class="method-name">${list.name}</span></div>
+                            <div><span class="method-value">${accountCount}</span></div>
+                            <div><button class="secondary-btn toggle-list-btn" data-listid="${listId}">Show Accounts</button></div>
+                        </div>
+                        <div id="${listId}" class="list-details">
+                            <strong>Accounts:</strong>
+                            <div class="account-chips-container">
+                                ${list.usernames && list.usernames.length > 0 ? 
+                                    list.usernames.map(username => `<span class="account-chip">@${username}</span>`).join('') :
+                                    '<em>No accounts in this list</em>'
+                                }
                             </div>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 `;
             });
-            html += '</tbody></table>';
+            html += '</div>';
             showResults(listsResultDiv, html);
             showListsBtn.style.display = 'none';
             hideListsBtn.style.display = 'inline-block';
@@ -351,12 +348,12 @@ listsResultDiv.addEventListener('click', (event) => {
         const listId = event.target.dataset.listid;
         const accountsDiv = document.getElementById(listId);
         
-        if (accountsDiv.style.display === 'none') {
-            accountsDiv.style.display = 'block';
-            event.target.textContent = 'Hide Accounts';
-        } else {
-            accountsDiv.style.display = 'none';
+        if (accountsDiv.classList.contains('show')) {
+            accountsDiv.classList.remove('show');
             event.target.textContent = 'Show Accounts';
+        } else {
+            accountsDiv.classList.add('show');
+            event.target.textContent = 'Hide Accounts';
         }
     }
 });
