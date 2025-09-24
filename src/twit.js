@@ -7,7 +7,6 @@ const healthCheckBtn = document.getElementById('health-check');
 const healthResultDiv = document.getElementById('health-result');
 
 const addUsernameInput = document.getElementById('add-username');
-const addListInput = document.getElementById('add-list');
 const addAccountBtn = document.getElementById('add-account');
 const showAccountsBtn = document.getElementById('show-accounts');
 const hideAccountsBtn = document.getElementById('hide-accounts');
@@ -114,7 +113,6 @@ healthCheckBtn.addEventListener('click', async () => {
 // Add Account Handler
 addAccountBtn.addEventListener('click', async () => {
     const username = addUsernameInput.value.trim();
-    const list = addListInput.value.trim();
     
     if (!username) {
         showError(accountResultDiv, 'Please enter a username.');
@@ -126,7 +124,6 @@ addAccountBtn.addEventListener('click', async () => {
     
     try {
         const body = { username };
-        if (list) body.list = list;
         
         const result = await apiRequest('/accounts', {
             method: 'POST',
@@ -135,7 +132,6 @@ addAccountBtn.addEventListener('click', async () => {
         
         showSuccess(accountResultDiv, `${result.message}`);
         addUsernameInput.value = '';
-        addListInput.value = '';
     } catch (error) {
         showError(accountResultDiv, `Failed to add account: ${error.message}`);
     } finally {
@@ -158,7 +154,6 @@ showAccountsBtn.addEventListener('click', async () => {
                 html += `
                     <li>
                         <span class="method-name">@${account.username}</span>
-                        <span class="method-value">${account.list || 'no list'}</span>
                     </li>
                 `;
             });
@@ -570,11 +565,7 @@ addUsernameInput.addEventListener('keypress', (e) => {
     }
 });
 
-addListInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        addAccountBtn.click();
-    }
-});
+
 
 
 

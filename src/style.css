@@ -70,6 +70,10 @@ main {
     font-weight: 500;
 }
 
+.account-subsection .input-group {
+    margin-bottom: 15px;
+}
+
 .tool-section p {
     color: #666;
     margin-bottom: 20px;
