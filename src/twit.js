@@ -16,6 +16,14 @@ const hideAccountsBtn = document.getElementById('hide-accounts');
 const accountResultDiv = document.getElementById('account-result');
 const monitoredAccountsResultDiv = document.getElementById('monitored-accounts-result');
 
+const showListsBtn = document.getElementById('show-lists');
+const hideListsBtn = document.getElementById('hide-lists');
+const listsResultDiv = document.getElementById('lists-result');
+const newListNameInput = document.getElementById('new-list-name');
+const listUsernamesInput = document.getElementById('list-usernames');
+const createListBtn = document.getElementById('create-list');
+const createListResultDiv = document.getElementById('create-list-result');
+
 const tweetsLimitInput = document.getElementById('tweets-limit');
 const tweetsListInput = document.getElementById('tweets-list');
 const getAllTweetsBtn = document.getElementById('get-all-tweets');
@@ -224,6 +232,99 @@ bulkAddAccountsBtn.addEventListener('click', async () => {
     
     bulkAddAccountsBtn.disabled = false;
     bulkAddAccountsBtn.textContent = 'Add All Accounts';
+});
+
+// Show Lists Handler
+showListsBtn.addEventListener('click', async () => {
+    showListsBtn.disabled = true;
+    showListsBtn.textContent = 'Loading...';
+    
+    try {
+        const result = await apiRequest('/lists');
+        
+        if (result.data && result.data.length > 0) {
+            let html = '<h3>All Lists</h3><ul class="results-list">';
+            result.data.forEach(list => {
+                const accountCount = list.accounts ? list.accounts.length : 0;
+                html += `
+                    <li>
+                        <span class="method-name">${list.name}</span>
+                        <span class="method-value">${accountCount} accounts</span>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            showResults(listsResultDiv, html);
+            showListsBtn.style.display = 'none';
+            hideListsBtn.style.display = 'inline-block';
+        } else {
+            showResults(listsResultDiv, '<h3>All Lists</h3><p>No lists found in database.</p>');
+            showListsBtn.style.display = 'none';
+            hideListsBtn.style.display = 'inline-block';
+        }
+    } catch (error) {
+        showError(listsResultDiv, `Failed to get lists: ${error.message}`);
+    } finally {
+        showListsBtn.disabled = false;
+        showListsBtn.textContent = 'Show All Lists';
+    }
+});
+
+// Hide Lists Handler
+hideListsBtn.addEventListener('click', () => {
+    listsResultDiv.classList.remove('show');
+    listsResultDiv.innerHTML = '';
+    showListsBtn.style.display = 'inline-block';
+    hideListsBtn.style.display = 'none';
+});
+
+// Create List Handler
+createListBtn.addEventListener('click', async () => {
+    const listName = newListNameInput.value.trim();
+    const usernamesText = listUsernamesInput.value.trim();
+    
+    if (!listName) {
+        showError(createListResultDiv, 'Please enter a list name.');
+        return;
+    }
+    
+    if (!usernamesText) {
+        showError(createListResultDiv, 'Please enter at least one username.');
+        return;
+    }
+    
+    const usernames = usernamesText.split('\n')
+        .map(u => u.trim())
+        .filter(u => u && !u.startsWith('@')); // Remove empty lines and @ symbols
+    
+    if (usernames.length === 0) {
+        showError(createListResultDiv, 'Please enter valid usernames.');
+        return;
+    }
+    
+    createListBtn.disabled = true;
+    createListBtn.textContent = 'Creating List...';
+    
+    try {
+        const body = {
+            name: listName,
+            usernames: usernames
+        };
+        
+        const result = await apiRequest('/lists', {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+        
+        showSuccess(createListResultDiv, `List "${listName}" created successfully with ${usernames.length} accounts.`);
+        newListNameInput.value = '';
+        listUsernamesInput.value = '';
+    } catch (error) {
+        showError(createListResultDiv, `Failed to create list: ${error.message}`);
+    } finally {
+        createListBtn.disabled = false;
+        createListBtn.textContent = 'Create List';
+    }
 });
 
 // Show Monitored Accounts Handler
@@ -655,6 +756,19 @@ bulkUsernamesInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         bulkAddAccountsBtn.click();
+    }
+});
+
+newListNameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        createListBtn.click();
+    }
+});
+
+listUsernamesInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        createListBtn.click();
     }
 });
 

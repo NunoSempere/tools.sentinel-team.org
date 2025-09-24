@@ -73,43 +73,92 @@
         </section>
 
         <section class="tool-section">
-            <h2>Get Tweets from list</h2>
-            <p>Retrieve tweets from all monitored accounts with optional list filtering:</p>
+            <h2>List Management</h2>
+            <p>View and create lists for organizing monitored accounts.</p>
             
-            <div class="input-grid">
-                <div class="input-group">
-                    <label for="tweets-list">List Name:</label>
-                    <input type="text" id="tweets-list" placeholder="whitehouse" aria-label="Filter by list name">
+            <div class="account-subsection">
+                <h3>View All Lists</h3>
+                <p>View all lists currently in the system.</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="show-lists" class="secondary-btn">Show All Lists</button>
+                    <button id="hide-lists" class="secondary-btn" style="display: none;">Hide Lists</button>
                 </div>
-                <div class="input-group">
-                    <label for="tweets-limit">Limit (max 1000):</label>
-                    <input type="number" id="tweets-limit" value="1000" min="1" max="1000" aria-label="Number of tweets to retrieve">
-                </div>
+                
+                <div id="lists-result" class="results-container"></div>
             </div>
             
-            <button id="get-all-tweets" class="primary-btn">Get All Tweets</button>
-            <button id="hide-all-tweets" class="secondary-btn" style="display: none; margin-left: 10px;">Hide Results</button>
-            <div id="tweets-result" class="results-container"></div>
+            <div class="account-subsection">
+                <h3>Create New List</h3>
+                <p>Create a new list from existing monitored accounts.</p>
+                
+                <div class="input-group">
+                    <label for="new-list-name">List Name:</label>
+                    <input type="text" id="new-list-name" placeholder="my-list" aria-label="New list name">
+                </div>
+                
+                <div class="input-group">
+                    <label for="list-usernames">Usernames for List (one per line):</label>
+                    <textarea id="list-usernames" rows="6" placeholder="elonmusk&#10;OpenAI&#10;AnthropicAI" aria-label="Usernames to add to list" style="resize: vertical;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="create-list" class="primary-btn">Create List</button>
+                </div>
+                
+                <div id="create-list-result" class="results-container"></div>
+            </div>
         </section>
 
         <section class="tool-section">
-            <h2>Get User Tweets</h2>
-            <p>Retrieve tweets from a specific user:</p>
+            <h2>Tweet Retrieval</h2>
+            <p>Retrieve tweets from monitored accounts or specific users.</p>
             
-            <div class="input-grid">
-                <div class="input-group">
-                    <label for="user-tweets-username">Username:</label>
-                    <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
+            <div class="account-subsection">
+                <h3>Get Tweets from All Accounts</h3>
+                <p>Retrieve tweets from all monitored accounts with optional list filtering:</p>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="tweets-list">List Name:</label>
+                        <input type="text" id="tweets-list" placeholder="whitehouse" aria-label="Filter by list name">
+                    </div>
+                    <div class="input-group">
+                        <label for="tweets-limit">Limit (max 1000):</label>
+                        <input type="number" id="tweets-limit" value="1000" min="1" max="1000" aria-label="Number of tweets to retrieve">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="user-tweets-limit">Limit (max 1000):</label>
-                    <input type="number" id="user-tweets-limit" value="1000" min="1" max="1000" aria-label="Number of tweets from user">
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="get-all-tweets" class="primary-btn">Get All Tweets</button>
+                    <button id="hide-all-tweets" class="secondary-btn" style="display: none; margin-left: 10px;">Hide Results</button>
                 </div>
+                
+                <div id="tweets-result" class="results-container"></div>
             </div>
             
-            <button id="get-user-tweets" class="primary-btn">Get User Tweets</button>
-            <button id="hide-user-tweets" class="secondary-btn" style="display: none; margin-left: 10px;">Hide Results</button>
-            <div id="user-tweets-result" class="results-container"></div>
+            <div class="account-subsection">
+                <h3>Get User Tweets</h3>
+                <p>Retrieve tweets from a specific user:</p>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="user-tweets-username">Username:</label>
+                        <input type="text" id="user-tweets-username" placeholder="elonmusk" aria-label="Username to get tweets from">
+                    </div>
+                    <div class="input-group">
+                        <label for="user-tweets-limit">Limit (max 1000):</label>
+                        <input type="number" id="user-tweets-limit" value="1000" min="1" max="1000" aria-label="Number of tweets from user">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="get-user-tweets" class="primary-btn">Get User Tweets</button>
+                    <button id="hide-user-tweets" class="secondary-btn" style="display: none; margin-left: 10px;">Hide Results</button>
+                </div>
+                
+                <div id="user-tweets-result" class="results-container"></div>
+            </div>
         </section>
 
         <section class="tool-section">
