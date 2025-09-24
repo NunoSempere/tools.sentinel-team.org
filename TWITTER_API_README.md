@@ -109,6 +109,124 @@ curl -X POST https://tweets.nunosempere.com/api/lists \
 curl "https://tweets.nunosempere.com/api/lists" | jq
 ```
 
+This is the format which this response returns
+
+```
+{
+  "success": true,
+  "message": "Lists retrieved successfully",
+  "data": [
+    {
+      "name": "ai",
+      "usernames": [
+        "xAI"
+      ],
+      "count": 1
+    },
+    {
+      "name": "ai-og",
+      "usernames": [
+        "AIHegemonyMemes",
+        "aixbt_agent",
+        "truth_terminal"
+      ],
+      "count": 3
+    },
+    {
+      "name": "forecasting",
+      "usernames": [
+        "Domahhhh",
+        "JGalt",
+        "MickBransfield",
+        "PTetlock",
+        "shayne_coplan"
+      ],
+      "count": 5
+    },
+    {
+      "name": "freight",
+      "usernames": [
+        "FreightWaves",
+        "SpencerHakimian"
+      ],
+      "count": 2
+    },
+    {
+      "name": "nuno-following",
+      "usernames": [
+        "0xellipse",
+        "0xperp",
+        "42irrationalist",
+        "7ip7ap",
+        "zackmdavis",
+        "zeta_globin",
+        "zetalyrae",
+        "zheanxu",
+        ...
+        "zmkzmkz"
+      ],
+      "count": 559
+    },
+    {
+      "name": "signal",
+      "usernames": [
+        "artoriastech",
+        "chefjoseandres",
+        "ChinaBugle",
+        "CNASdc",
+        "criticalthreats",
+        "elder_plinius",
+        "ELuttwak",
+        "JgaltTweets",
+        "Mollyploofkins",
+        "NWSSWPC",
+        "OSINTNW",
+        "SecDef",
+        "sentdefender",
+        "SteveWitkoff",
+        "teortaxesTex",
+        "typesfast",
+        "VOCPEnglish",
+        "zephyr_z9"
+      ],
+      "count": 18
+    },
+    {
+      "name": "tech",
+      "usernames": [
+        "elonmusk"
+      ],
+      "count": 1
+    },
+    {
+      "name": "typesfast",
+      "usernames": [
+        "FreightAlley"
+      ],
+      "count": 1
+    },
+    {
+      "name": "whitehouse",
+      "usernames": [
+        "DODResponse",
+        "howardlutnick",
+        "JDVance",
+        "marcorubio",
+        "PamBondi",
+        "PressSec",
+        "RapidResponse47",
+        "SecRubio",
+        "tedcruz",
+        "trump_repost",
+        "VP",
+        "WhiteHouse"
+      ],
+      "count": 12
+    }
+  ]
+}
+```
+
 #### Get Specific List
 - **GET** `/api/lists/{listName}`
 - Returns details for a specific list
