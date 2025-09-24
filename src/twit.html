@@ -44,6 +44,22 @@
             </div>
             
             <div class="account-subsection">
+                <h3>Bulk Import Accounts</h3>
+                <p>Add multiple accounts at once. Enter one username per line.</p>
+                
+                <div class="input-group">
+                    <label for="bulk-usernames">Twitter Usernames (one per line):</label>
+                    <textarea id="bulk-usernames" rows="6" placeholder="elonmusk&#10;OpenAI&#10;AnthropicAI&#10;username4" aria-label="Multiple usernames to add" style="resize: vertical;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="bulk-add-accounts" class="primary-btn">Add All Accounts</button>
+                </div>
+                
+                <div id="bulk-result" class="results-container"></div>
+            </div>
+            
+            <div class="account-subsection">
                 <h3>View Monitored Accounts</h3>
                 <p>View all accounts currently being monitored by the system.</p>
                 

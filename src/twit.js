@@ -8,6 +8,9 @@ const healthResultDiv = document.getElementById('health-result');
 
 const addUsernameInput = document.getElementById('add-username');
 const addAccountBtn = document.getElementById('add-account');
+const bulkUsernamesInput = document.getElementById('bulk-usernames');
+const bulkAddAccountsBtn = document.getElementById('bulk-add-accounts');
+const bulkResultDiv = document.getElementById('bulk-result');
 const showAccountsBtn = document.getElementById('show-accounts');
 const hideAccountsBtn = document.getElementById('hide-accounts');
 const accountResultDiv = document.getElementById('account-result');
@@ -138,6 +141,89 @@ addAccountBtn.addEventListener('click', async () => {
         addAccountBtn.disabled = false;
         addAccountBtn.textContent = 'Add Account';
     }
+});
+
+// Bulk Add Accounts Handler
+bulkAddAccountsBtn.addEventListener('click', async () => {
+    const usernamesText = bulkUsernamesInput.value.trim();
+    
+    if (!usernamesText) {
+        showError(bulkResultDiv, 'Please enter at least one username.');
+        return;
+    }
+    
+    const usernames = usernamesText.split('\n')
+        .map(u => u.trim())
+        .filter(u => u && !u.startsWith('@')); // Remove empty lines and @ symbols
+    
+    if (usernames.length === 0) {
+        showError(bulkResultDiv, 'Please enter valid usernames.');
+        return;
+    }
+    
+    bulkAddAccountsBtn.disabled = true;
+    bulkAddAccountsBtn.textContent = `Adding ${usernames.length} accounts...`;
+    
+    const results = {
+        successful: [],
+        failed: []
+    };
+    
+    // Show initial progress
+    showResults(bulkResultDiv, `<div>Processing ${usernames.length} accounts...</div>`);
+    
+    for (let i = 0; i < usernames.length; i++) {
+        const username = usernames[i];
+        
+        try {
+            const result = await apiRequest('/accounts', {
+                method: 'POST',
+                body: JSON.stringify({ username })
+            });
+            
+            results.successful.push({ username, message: result.message });
+        } catch (error) {
+            results.failed.push({ username, error: error.message });
+        }
+        
+        // Update progress
+        const progress = Math.round(((i + 1) / usernames.length) * 100);
+        showResults(bulkResultDiv, `<div>Processing ${usernames.length} accounts... ${progress}% complete (${i + 1}/${usernames.length})</div>`);
+    }
+    
+    // Show final results
+    let html = `<h3>Bulk Import Results</h3>`;
+    html += `<p><strong>Total:</strong> ${usernames.length} accounts processed</p>`;
+    html += `<p><strong>Successful:</strong> ${results.successful.length}</p>`;
+    html += `<p><strong>Failed:</strong> ${results.failed.length}</p>`;
+    
+    if (results.successful.length > 0) {
+        html += '<h4 style="color: #2e7d32; margin-top: 15px;">Successfully Added:</h4>';
+        html += '<ul class="results-list">';
+        results.successful.forEach(item => {
+            html += `<li><span class="method-name">@${item.username}</span></li>`;
+        });
+        html += '</ul>';
+    }
+    
+    if (results.failed.length > 0) {
+        html += '<h4 style="color: #d32f2f; margin-top: 15px;">Failed to Add:</h4>';
+        html += '<ul class="results-list">';
+        results.failed.forEach(item => {
+            html += `<li><span class="method-name">@${item.username}</span> - ${item.error}</li>`;
+        });
+        html += '</ul>';
+    }
+    
+    showResults(bulkResultDiv, html);
+    
+    // Clear input if all successful
+    if (results.failed.length === 0) {
+        bulkUsernamesInput.value = '';
+    }
+    
+    bulkAddAccountsBtn.disabled = false;
+    bulkAddAccountsBtn.textContent = 'Add All Accounts';
 });
 
 // Show Monitored Accounts Handler
@@ -562,6 +648,13 @@ function displayFilterResults(result) {
 addUsernameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         addAccountBtn.click();
+    }
+});
+
+bulkUsernamesInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        bulkAddAccountsBtn.click();
     }
 });
 
