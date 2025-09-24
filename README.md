@@ -39,7 +39,7 @@ make run
 go run src/handlers.go src/main.go src/types.go
 ```
 
-**Note:** The server automatically creates the `filter_jobs` table on first startup if it doesn't exist.
+**Note:** The server automatically creates the `filter_jobs` and `tweet_lists` tables on first startup if they don't exist.
 
 ## API Reference
 
@@ -85,6 +85,47 @@ curl -X POST https://tweets.nunosempere.com/api/accounts \
 #### Delete Account
 - **DELETE** `/api/accounts/{username}`
 - Removes an account from the database
+
+### List Management
+
+#### Create or Update List
+- **POST** `/api/lists`
+- **Body:** `{"name": "list_name", "usernames": ["user1", "user2", "user3"]}`
+- Creates a new list or updates an existing list with the specified usernames
+
+**Example:**
+```bash
+curl -X POST https://tweets.nunosempere.com/api/lists \
+  -H "Content-Type: application/json" \
+  -d '{"name": "ai-experts", "usernames": ["OpenAI", "AnthropicAI", "DeepMind"]}'
+```
+
+#### Get All Lists
+- **GET** `/api/lists`
+- Returns all lists with their usernames and counts
+
+**Example:**
+```bash
+curl "https://tweets.nunosempere.com/api/lists" | jq
+```
+
+#### Get Specific List
+- **GET** `/api/lists/{listName}`
+- Returns details for a specific list
+
+**Example:**
+```bash
+curl "https://tweets.nunosempere.com/api/lists/ai-experts" | jq
+```
+
+#### Delete List
+- **DELETE** `/api/lists/{listName}`
+- Removes a list from the database
+
+**Example:**
+```bash
+curl -X DELETE "https://tweets.nunosempere.com/api/lists/old-list"
+```
 
 ### Tweet Retrieval
 
@@ -316,7 +357,9 @@ All API responses follow this consistent format:
 
 The server integrates with a PostgreSQL database:
 - **`tweet_accounts` table**: Stores Twitter accounts to fetch
+- **`tweet_lists` table**: Stores lists with comma-separated usernames (allows accounts in multiple lists)
 - **`tweets0x001` table**: Stores fetched tweets
+- **`filter_jobs` table**: Stores background filtering job status and results
 - Backend fetcher runs independently every 10 minutes
 
 ## Deployment

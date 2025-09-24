@@ -399,7 +399,8 @@ async function pollFilterJob(jobId, retryCount = 0) {
             }
             
             // Job still in progress, wait before next poll
-            const delay = Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
+            // const delay = Math.min(1000 * Math.pow(1.5, attempts), 5000); // Exponential backoff up to 5s
+            const delay = 200
             await new Promise(resolve => setTimeout(resolve, delay));
             attempts++;
             
