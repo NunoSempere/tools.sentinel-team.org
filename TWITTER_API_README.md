@@ -304,7 +304,8 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
 **Request Body:**
 ```json
 {
-  "question": "Does this tweet discuss artificial intelligence or machine learning?",
+  "filter_question": "Does this tweet discuss artificial intelligence or machine learning?",
+  "summarization_question": "What are the key AI developments discussed in these tweets?",
   "users": ["OpenAI", "elonmusk", "AnthropicAI"]
 }
 ```
@@ -328,7 +329,8 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
       }
     ],
     "count": 1,
-    "question": "Does this tweet discuss artificial intelligence or machine learning?"
+    "filter_question": "Does this tweet discuss artificial intelligence or machine learning?",
+    "summarization_question": "What are the key AI developments discussed in these tweets?"
   }
 }
 ```
@@ -345,7 +347,8 @@ curl "https://tweets.nunosempere.com/api/tweets/elonmusk?limit=50" | jq
 curl -X POST https://tweets.nunosempere.com/api/filter \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "Does this tweet mention cryptocurrency or Bitcoin?",
+    "filter_question": "Does this tweet mention cryptocurrency or Bitcoin?",
+    "summarization_question": "What are the main cryptocurrency trends and developments discussed?",
     "users": ["elonmusk", "VitalikButerin"]
   }'
 ```
@@ -359,7 +362,8 @@ curl -X POST https://tweets.nunosempere.com/api/filter \
 JOB_RESPONSE=$(curl -X POST https://tweets.nunosempere.com/api/filter-job \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "Does this tweet discuss artificial intelligence?",
+    "filter_question": "Does this tweet discuss artificial intelligence?",
+    "summarization_question": "What are the main AI topics and developments discussed?",
     "list": "ai-og"
   }')
 
@@ -454,7 +458,8 @@ class FilterJobClient {
 // Usage
 const client = new FilterJobClient();
 client.startFilter({
-  question: "Does this tweet discuss AI?",
+  filter_question: "Does this tweet discuss AI?",
+  summarization_question: "What are the main AI developments discussed?",
   list: "ai-og"
 }).then(results => {
   console.log('Filter completed:', results.data.results);
@@ -584,7 +589,8 @@ curl "https://tweets.nunosempere.com/api/tweets/OpenAI?limit=50" | jq
 curl -X POST https://tweets.nunosempere.com/api/filter \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "Does this tweet announce a new AI model or research?",
+    "filter_question": "Does this tweet announce a new AI model or research?",
+    "summarization_question": "What are the key AI model announcements and research developments?",
     "users": ["OpenAI", "AnthropicAI"]
   }' --max-time 180 | jq
 ```

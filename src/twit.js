@@ -42,6 +42,7 @@ const hideAllTweetsBtn = document.getElementById('hide-all-tweets');
 const hideUserTweetsBtn = document.getElementById('hide-user-tweets');
 
 const filterQuestionInput = document.getElementById('filter-question');
+const summarizationQuestionInput = document.getElementById('summarization-question');
 const filterListInput = document.getElementById('filter-list');
 const filterUsersInput = document.getElementById('filter-users');
 const filterTweetsBtn = document.getElementById('filter-tweets');
@@ -626,12 +627,18 @@ getUserTweetsBtn.addEventListener('click', async () => {
 
 // Filter Tweets Handler (Polling)
 filterTweetsBtn.addEventListener('click', async () => {
-    const question = filterQuestionInput.value.trim();
+    const filterQuestion = filterQuestionInput.value.trim();
+    const summarizationQuestion = summarizationQuestionInput.value.trim();
     const list = filterListInput.value.trim();
     const usersText = filterUsersInput.value.trim();
     
-    if (!question) {
+    if (!filterQuestion) {
         showError(filterResultDiv, 'Please enter a filter question.');
+        return;
+    }
+    
+    if (!summarizationQuestion) {
+        showError(filterResultDiv, 'Please enter a summarization question.');
         return;
     }
     
@@ -652,7 +659,10 @@ filterTweetsBtn.addEventListener('click', async () => {
     showResults(filterResultDiv, '<div id="filter-progress"><p>Creating filter job...</p></div>');
     
     try {
-        const requestBody = { question: question };
+        const requestBody = { 
+            filter_question: filterQuestion,
+            summarization_question: summarizationQuestion
+        };
         
         if (list) {
             requestBody.list = list;
@@ -969,6 +979,13 @@ userTweetsUsernameInput.addEventListener('keypress', (e) => {
 });
 
 filterQuestionInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        filterTweetsBtn.click();
+    }
+});
+
+summarizationQuestionInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         filterTweetsBtn.click();
