@@ -90,7 +90,7 @@
             
             <div class="account-subsection">
                 <h3>Create New List</h3>
-                <p>Create a new list from existing monitored accounts. If you want to edit a list, contact Nuño.</p>
+                <p>Create a new list from existing monitored accounts.</p>
                 
                 <div class="input-group">
                     <label for="new-list-name">List Name:</label>
@@ -107,6 +107,33 @@
                 </div>
                 
                 <div id="create-list-result" class="results-container"></div>
+            </div>
+            
+            <div class="account-subsection">
+                <h3>Edit Existing List</h3>
+                <p style="color: #d32f2f; font-weight: bold;">⚠️ WARNING: This operation is destructive and will completely replace the existing list contents.</p>
+                <p style="font-size: 15px;">Before editing, you can copy the current list items from the "View All Lists" section above using the "Copy List" button.</p>
+                
+                <div class="input-group">
+                    <label for="edit-list-name">List Name to Edit:</label>
+                    <input type="text" id="edit-list-name" placeholder="existing-list-name" aria-label="Name of list to edit">
+                </div>
+                
+                <div class="input-group">
+                    <label for="edit-list-usernames">New Usernames for List (one per line):</label>
+                    <textarea id="edit-list-usernames" rows="6" placeholder="username1&#10;username2&#10;username3" aria-label="New usernames to replace in list" style="resize: vertical;"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="edit-list-password">Password:</label>
+                    <input type="password" id="edit-list-password" placeholder="Required for editing lists" aria-label="Password for editing lists">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button id="edit-list" class="primary-btn">Edit List</button>
+                </div>
+                
+                <div id="edit-list-result" class="results-container"></div>
             </div>
         </section>
 

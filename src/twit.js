@@ -24,6 +24,12 @@ const listUsernamesInput = document.getElementById('list-usernames');
 const createListBtn = document.getElementById('create-list');
 const createListResultDiv = document.getElementById('create-list-result');
 
+const editListNameInput = document.getElementById('edit-list-name');
+const editListUsernamesInput = document.getElementById('edit-list-usernames');
+const editListPasswordInput = document.getElementById('edit-list-password');
+const editListBtn = document.getElementById('edit-list');
+const editListResultDiv = document.getElementById('edit-list-result');
+
 const tweetsLimitInput = document.getElementById('tweets-limit');
 const tweetsListInput = document.getElementById('tweets-list');
 const getAllTweetsBtn = document.getElementById('get-all-tweets');
@@ -254,7 +260,10 @@ showListsBtn.addEventListener('click', async () => {
                         <div class="list-row">
                             <div><span class="method-name">${list.name}</span></div>
                             <div><span class="method-value">${accountCount}</span></div>
-                            <div><button class="secondary-btn toggle-list-btn" data-listid="${listId}">Show Accounts</button></div>
+                            <div>
+                                <button class="secondary-btn toggle-list-btn" data-listid="${listId}">Show Accounts</button>
+                                <button class="secondary-btn copy-list-btn" data-listname="${list.name}" data-usernames="${btoa(JSON.stringify(list.usernames || []))}" style="margin-left: 5px;">Copy List</button>
+                            </div>
                         </div>
                         <div id="${listId}" class="list-details">
                             <strong>Accounts:</strong>
@@ -342,7 +351,7 @@ createListBtn.addEventListener('click', async () => {
     }
 });
 
-// Event delegation for list account toggles
+// Event delegation for list account toggles and copy functionality
 listsResultDiv.addEventListener('click', (event) => {
     if (event.target.classList.contains('toggle-list-btn')) {
         const listId = event.target.dataset.listid;
@@ -355,8 +364,135 @@ listsResultDiv.addEventListener('click', (event) => {
             accountsDiv.classList.add('show');
             event.target.textContent = 'Hide Accounts';
         }
+    } else if (event.target.classList.contains('copy-list-btn')) {
+        const listName = event.target.dataset.listname;
+        const usernames = JSON.parse(atob(event.target.dataset.usernames || btoa('[]')));
+        
+        if (usernames.length === 0) {
+            showError(listsResultDiv, `List "${listName}" has no accounts to copy.`);
+            return;
+        }
+        
+        const textToCopy = usernames.join('\n');
+        
+        // Try to copy to clipboard
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    // Temporarily change button text to show success
+                    const originalText = event.target.textContent;
+                    event.target.textContent = 'Copied!';
+                    event.target.style.backgroundColor = '#4caf50';
+                    setTimeout(() => {
+                        event.target.textContent = originalText;
+                        event.target.style.backgroundColor = '';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy to clipboard:', err);
+                    fallbackCopy(textToCopy, event.target, listName);
+                });
+        } else {
+            // Fallback for older browsers or non-secure contexts
+            fallbackCopy(textToCopy, event.target, listName);
+        }
     }
 });
+
+// Edit List Handler
+editListBtn.addEventListener('click', async () => {
+    const listName = editListNameInput.value.trim();
+    const usernamesText = editListUsernamesInput.value.trim();
+    const password = editListPasswordInput.value.trim();
+    
+    if (!listName) {
+        showError(editListResultDiv, 'Please enter the name of the list to edit.');
+        return;
+    }
+    
+    if (!usernamesText) {
+        showError(editListResultDiv, 'Please enter at least one username.');
+        return;
+    }
+    
+    if (!password) {
+        showError(editListResultDiv, 'Password is required to edit lists.');
+        return;
+    }
+    
+    const usernames = usernamesText.split('\n')
+        .map(u => u.trim())
+        .filter(u => u && !u.startsWith('@')); // Remove empty lines and @ symbols
+    
+    if (usernames.length === 0) {
+        showError(editListResultDiv, 'Please enter valid usernames.');
+        return;
+    }
+    
+    editListBtn.disabled = true;
+    editListBtn.textContent = 'Editing List...';
+    
+    try {
+        const body = {
+            usernames: usernames,
+            password: password
+        };
+        
+        const result = await apiRequest(`/lists/${encodeURIComponent(listName)}/edit`, {
+            method: 'PUT',
+            body: JSON.stringify(body)
+        });
+        
+        showSuccess(editListResultDiv, `List "${listName}" updated successfully with ${usernames.length} accounts.`);
+        editListNameInput.value = '';
+        editListUsernamesInput.value = '';
+        editListPasswordInput.value = '';
+    } catch (error) {
+        if (error.message.includes('401')) {
+            showError(editListResultDiv, 'Incorrect password. Please try again.');
+        } else if (error.message.includes('404')) {
+            showError(editListResultDiv, `List "${listName}" not found. Please check the list name.`);
+        } else {
+            showError(editListResultDiv, `Failed to edit list: ${error.message}`);
+        }
+    } finally {
+        editListBtn.disabled = false;
+        editListBtn.textContent = 'Edit List';
+    }
+});
+
+// Fallback copy function for older browsers
+function fallbackCopy(text, button, listName) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            // Temporarily change button text to show success
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            button.style.backgroundColor = '#4caf50';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.backgroundColor = '';
+            }, 2000);
+        } else {
+            showError(listsResultDiv, `Failed to copy list "${listName}". Please copy manually: ${text}`);
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showError(listsResultDiv, `Copy not supported in this browser. List "${listName}" usernames: ${text}`);
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
 
 // Show Monitored Accounts Handler
 showAccountsBtn.addEventListener('click', async () => {
@@ -800,6 +936,25 @@ listUsernamesInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         createListBtn.click();
+    }
+});
+
+editListNameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        editListBtn.click();
+    }
+});
+
+editListUsernamesInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        editListBtn.click();
+    }
+});
+
+editListPasswordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        editListBtn.click();
     }
 });
 

@@ -30,6 +30,7 @@ go mod tidy
 DATABASE_POOL_URL=postgresql://username:password@localhost:5432/dbname
 PORT=3344
 OPENAI_API_KEY=your_openai_api_key_here
+PASSWORD=your_secret_password
 ```
 
 3. Run the server:
@@ -234,6 +235,23 @@ This is the format which this response returns
 **Example:**
 ```bash
 curl "https://tweets.nunosempere.com/api/lists/ai-experts" | jq
+```
+
+#### Edit/Replace List (Password Protected)
+- **PUT** `/api/lists/{listName}/edit`
+- **Body:** `{"usernames": ["user1", "user2", "user3"], "password": "your_password"}`
+- Replaces an existing list's usernames (deletes old list and recreates it)
+- Requires `PASSWORD` environment variable to be set
+- Returns 401 if password is incorrect, 404 if list doesn't exist
+
+**Example:**
+```bash
+curl -X PUT "https://tweets.nunosempere.com/api/lists/ai-experts/edit" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "usernames": ["OpenAI", "AnthropicAI", "DeepMind", "huggingface"],
+    "password": "your_secret_password"
+  }'
 ```
 
 #### Delete List
@@ -518,6 +536,7 @@ make clean    # Remove build artifacts
 
 **Optional:**
 - `OPENAI_API_KEY`: Required for `/api/filter` endpoint
+- `PASSWORD`: Required for password-protected endpoints like `/api/lists/{listName}/edit`
 
 ## Architecture
 

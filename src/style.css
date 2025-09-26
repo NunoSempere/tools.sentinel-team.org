@@ -194,7 +194,7 @@ main {
     margin-top: 10px;
 }
 
-textarea, input[type="number"], input[type="text"] {
+textarea, input[type="number"], input[type="text"], input[type="password"] {
     padding: 12px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
@@ -224,7 +224,7 @@ input[type="text"]#past-date:focus {
     box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
-textarea:focus, input[type="number"]:focus, input[type="text"]:focus {
+textarea:focus, input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus {
     outline: none;
     border-color: #333;
 }
